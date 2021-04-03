@@ -67,8 +67,6 @@ public class OrderRequestPreparer {
 
 	private WalletInfo createWalletInfo() {
 		WalletInfo walletInfo = new WalletInfo();
-		walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
-		walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
 		walletInfo.setPrivateKey("b05ae23814ff6cba5e640d4ac3dad7ead15e3ea73089077c01e784a97ecf4239");
 		walletInfo.setPublicKey("0xa827A97B88a462ECE07f53bc9A104c0e71983004");
 		return walletInfo;
