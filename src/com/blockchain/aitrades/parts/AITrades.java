@@ -1,8 +1,16 @@
 package com.blockchain.aitrades.parts;
 
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.annotation.PostConstruct;
 
-import org.eclipse.osgi.internal.debug.FrameworkDebugOptions;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -14,10 +22,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -40,6 +47,9 @@ public class AITrades {
 	private static final String SNIPE_ORDER = "http://localhost:8080/aitrades/eth-gateway/snipe/api/v1/snipeOrder";
 	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
+	private static final String BNB_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+
+	
 	private Button tradeButton = null;
 	private Button snipeButton = null;
 	private String tradeOrSnipe=null;
@@ -58,6 +68,13 @@ public class AITrades {
 	Text stopPriceText = null;
 	Text percentText = null;
 	Combo orderTypeLabelComboitems = null;
+	
+	boolean isFeeEligibile = false;
+	
+	boolean isExecition = false;
+	DateTime time = null;
+	String executionTime = "";
+	Button isExecutionOrderCheckBox = null;
 	
 	Device device = Display.getCurrent();
 	RGB rgbRed = new RGB(255, 0, 0);
@@ -87,15 +104,17 @@ public class AITrades {
 	RGB rgbWhite = new RGB(255, 255, 255);
 	Color whiteColor = new Color(device, rgbWhite);
 	
+	String localDateTime =  null;
+	String localDateTime1 =  null;
+	
 	@PostConstruct
 	public void createComposite(Composite parent1) {
 		
-		parent1.setLayout(new GridLayout(1, true));
+		parent1.setLayout(new GridLayout(2, true));
 		parent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		GridData data = new GridData(SWT.NONE, SWT.NONE, true, true);
 		parent1.setLayoutData(data);
 		data.minimumHeight=100;
-		
 		
 		Composite parent = new Composite(parent1, SWT.NONE);
 		parent.setLayout(new GridLayout(1, true));
@@ -139,7 +158,7 @@ public class AITrades {
 		routeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				dexRoute = ((Combo)e.getSource()).toString();
+				dexRoute = ((Combo)e.getSource()).getText().toString();
 			}
 		});
 		
@@ -174,6 +193,18 @@ public class AITrades {
 		slipagelabelText.setLayoutData(new GridData(100, 20));
 		slipagelabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
+		Label FeeLabel = new Label(topComposite, SWT.NONE);
+		FeeLabel.setText("FEE                     ");
+		FeeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		Button hasFee = new Button(topComposite, SWT.CHECK);
+		hasFee.setText("Fee");
+		hasFee.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent event) {
+		    	Button btn = (Button) event.getSource();
+		    	isFeeEligibile = btn.getSelection();
+		    }
+		});
 		
 		Label gasModeLabel = new Label(topComposite, SWT.NONE);
 		gasModeLabel.setText("GAS MODE           ");
@@ -350,6 +381,41 @@ public class AITrades {
 		});
 		
 		
+		Label isExecutionTimeLabel = new Label(topComposite, SWT.NONE);
+		isExecutionTimeLabel.setText("Exe Order Time             ");
+		isExecutionTimeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		isExecutionOrderCheckBox = new Button(topComposite, SWT.CHECK);
+		isExecutionOrderCheckBox.setEnabled(false);
+		
+		Label timeLabel = new Label(topComposite, SWT.NONE);// if gas mode is custom then enable gasprice
+		timeLabel.setText("Time   ");
+		timeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		
+        time = new DateTime(topComposite, SWT.TIME);;
+        time.setEnabled(false);
+		//time.setRegion(region);
+		isExecutionOrderCheckBox.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent event) {
+		    	Button btn = (Button) event.getSource();
+		    	isExecition = btn.getSelection();
+		    	time.setEnabled(true);
+		    }
+		});
+		
+		time.addSelectionListener(new SelectionAdapter() {
+			 @Override
+			    public void widgetSelected(SelectionEvent event) {
+				  int hrs = ((DateTime)event.getSource()).getHours();
+				  int minutes = ((DateTime)event.getSource()).getMinutes();
+				  int seconds = ((DateTime)event.getSource()).getSeconds();
+			    	Date date = createDate();
+			    	date = addHoursToDate(date, hrs);
+					date = addMinutesToDate(date, minutes);
+					date = addMinutesToDate(date, seconds);
+				    localDateTime = String.format("%tY-%<tm-%<tdT%<tH:%<tM:%<tS", date);
+			    }
+		});
 		Composite sideButtonComposite = new Composite(parent, SWT.NONE);
 		GridLayout sidetopCompositeLayout = new GridLayout(2, false);
 		sideButtonComposite.setLayout(sidetopCompositeLayout);
@@ -391,6 +457,11 @@ public class AITrades {
 				String limitPrice =  limitPriceText.getText();// 
 				String stopPrice = stopPriceText.getText();//
 				String percentage = percentText.getText();// trailpercent
+				
+				System.out.println("localdatetine Str -"+localDateTime);
+
+				System.out.println("localdatetine Str -"+localDateTime1);
+				
 				if(tradeOrSnipe.equalsIgnoreCase("Trade")) {
 					callCreateOrderService(fromAddress.getText(), 
 							toAddressText.getText(), 
@@ -404,7 +475,8 @@ public class AITrades {
 						    limitPrice,
 						    stopPrice,
 						    percentage, 
-						    dexRoute
+						    dexRoute,
+						    isFeeEligibile
 						    );
 				}else {
 					callSnipeOrderService(fromAddress.getText(), 
@@ -419,7 +491,7 @@ public class AITrades {
 									      limitPrice,
 									      stopPrice,
 									      percentage, 
-									      routeComboitems.getText());
+									      routeComboitems.getText(), isFeeEligibile, localDateTime);
 				}
 			}
 		});
@@ -430,11 +502,11 @@ public class AITrades {
 										  String slipage, String gasMode, String gasGwei, 
 										  String gasLimitGwei, String side,  
 										 String orderType, String limitPrice, 
-										 String stopPrice, String percentage, String route) {
+										 String stopPrice, String percentage, String route, boolean isFeeEligibile) {
 		try {
 			OrderRequestPreparer  orderRequestPreparer = new OrderRequestPreparer();
 			Order order = orderRequestPreparer.createOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, 
-					side, orderType, limitPrice, stopPrice, percentage, route);
+					side, orderType, limitPrice, stopPrice, percentage, route, isFeeEligibile);
 			
 			ObjectMapper mapper = new ObjectMapper();
 			System.out.println("order json "+mapper.writeValueAsString(order));
@@ -452,11 +524,15 @@ public class AITrades {
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
 									   String gasMode, String gasGwei, String gasLimitGwei, String orderType,  
 									   String side, String limitPrice, String stopPrice, 
-									   String percentage, String route) {
+									   String percentage, String route, boolean isFeeEligibile, String localDateTime) {
 		try {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
-					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route);
+					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime);
+			
+			ObjectMapper mapper = new ObjectMapper();
+			System.out.println("order json "+mapper.writeValueAsString(snipeTransactionRequest));
+			
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			RestTemplate restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
@@ -485,7 +561,7 @@ public class AITrades {
 		Shell shell = Display.getDefault().getActiveShell();
 		MessageBox dialog = new MessageBox(shell, SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
 		dialog.setText("Trade");
-		dialog.setMessage("Do you want to call trade?");
+		dialog.setMessage("Please check DEX, From & To for Buy & Sell!!");
 		return dialog.open();
 	}
 	
@@ -524,7 +600,7 @@ public class AITrades {
 				if(e.getSource()!= null && "SNIPE".equalsIgnoreCase(selButton)) {
 					snipeButton.setBackground(lightGreenColor);
 					tradeButton.setBackground(black);
-					fromAddress.setText(ETH_ADDRESS);
+					fromAddress.setText("PANCAKE".equalsIgnoreCase(dexRoute) ? BNB_ADDRESS : ETH_ADDRESS);
 					fromAddress.setEditable(false);
 					fromAddress.setEnabled(false);
 					limitPriceText.setEnabled(false);
@@ -546,6 +622,7 @@ public class AITrades {
 					
 					sellButton.setBackground(black);
 					buyButton.setBackground(black);
+					isExecutionOrderCheckBox.setEnabled(true);
 				} else {
 					fromAddress.setText("");
 					tradeButton.setBackground(lightGreenColor);
@@ -563,9 +640,42 @@ public class AITrades {
 					orderTypeLabelComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					sellButton.setBackground(greyColor);
 					buyButton.setBackground(greyColor);
+					isExecutionOrderCheckBox.setEnabled(false);
+					time.setEnabled(false);
 				}
 			}};
 		return sAdapter;
 	
+	}
+	
+	private static Date createDate() {
+		Calendar cal = Calendar.getInstance(); // locale-specific
+		cal.setTime(new Date());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
+	}
+	
+	public static Date addSecondsToDate(Date date, int minutes) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.SECOND, minutes);
+		return calendar.getTime();
+	}
+	
+	public static Date addMinutesToDate(Date date, int minutes) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.MINUTE, minutes);
+		return calendar.getTime();
+	}
+
+	public static Date addHoursToDate(Date date, int hours) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTime(date);
+		calendar.add(Calendar.HOUR_OF_DAY, hours);
+		return calendar.getTime();
 	}
 }

@@ -21,27 +21,29 @@ import com.blockchain.aitrades.domain.WalletInfo;
 
 public class OrderRequestPreparer {
 
+	private static final String PANCAKE = "PANCAKE";
 	private static final String WORKING = "WORKING";
 	private static final String CUSTOM = "CUSTOM";
-	
+	private static final String BNB_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+
 	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
 	public Order createOrder(String fromAddress, String toAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei, String gasLimitGwei,
 							 String side, String orderType, String limitPrice, String stopPrice, 
-							 String percentage, String route) {
+							 String percentage, String route, boolean isFeeEligibile) {
 		
 		Order order = new Order();
 		
 		if(OrderSide.BUY.name().equalsIgnoreCase(side)) {
-			fromAddress = ETH_ADDRESS;
+			fromAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
 		}
 		if(OrderSide.SELL.name().equalsIgnoreCase(side)) {
-			toAddress = ETH_ADDRESS;
+			toAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;;
 		}
 		
-		order.setFrom(createTickerEntity(amount, fromAddress, side));
-		order.setTo(createTickerEntity(null, toAddress, side));
+		order.setFrom(createTickerEntity(route, amount, fromAddress, side));
+		order.setTo(createTickerEntity(route, null, toAddress, side));
 		order.setOrderEntity(createOrderEntity(orderType, side, limitPrice, stopPrice, percentage));
 		order.setSlippage(createSlipage(slipage));
 		
@@ -53,8 +55,9 @@ public class OrderRequestPreparer {
 			order.setGasPrice(createGas("1"));
 			order.setGasLimit(createGas("1"));
 		}
-		order.setWalletInfo(createWalletInfo());
+		order.setWalletInfo(createWalletInfo(route));
 		order.setRoute(route);
+		order.setFee(isFeeEligibile);
 		return order;
 	}
 	
@@ -65,10 +68,15 @@ public class OrderRequestPreparer {
 		return gas;
 	}
 
-	private WalletInfo createWalletInfo() {
+	private WalletInfo createWalletInfo(String route) {
 		WalletInfo walletInfo = new WalletInfo();
-		walletInfo.setPrivateKey("b05ae23814ff6cba5e640d4ac3dad7ead15e3ea73089077c01e784a97ecf4239");
-		walletInfo.setPublicKey("0xa827A97B88a462ECE07f53bc9A104c0e71983004");
+		if("PANCAKE".equalsIgnoreCase(route)) {
+			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
+			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");
+		}else {
+			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
+			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
+		}
 		return walletInfo;
 	}
 
@@ -178,7 +186,7 @@ public class OrderRequestPreparer {
 		return slipage;
 	}
 
-	private static TickerEntity createTickerEntity(String amount, String address, String side) {
+	private static TickerEntity createTickerEntity(String route, String amount, String address, String side) {
 		TickerEntity tickerEntity = new TickerEntity();
 		if(amount != null) {
 			tickerEntity.setAmount(amount);

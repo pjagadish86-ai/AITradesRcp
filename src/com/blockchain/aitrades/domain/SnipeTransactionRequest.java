@@ -66,6 +66,9 @@ public class SnipeTransactionRequest {
 	
 	private String read;
 	
+	private boolean exeTimeCheck;
+	private String executionTime;
+	
 	public String getId() {
 		return id;
 	}
@@ -209,6 +212,14 @@ public class SnipeTransactionRequest {
 	public void setHasApproved(boolean hasApproved) {
 		this.hasApproved = hasApproved;
 	}
+	
+	public boolean isExeTimeCheck() {
+		return exeTimeCheck;
+	}
+
+	public void setExeTimeCheck(boolean exeTimeCheck) {
+		this.exeTimeCheck = exeTimeCheck;
+	}
 
 	@JsonIgnore
 	public BigDecimal slipageInBips() {
@@ -315,4 +326,12 @@ public class SnipeTransactionRequest {
 		this.slipageInDouble = slipageInDouble;
 	}
 
+	public String getExecutionTime() {
+		return executionTime;
+	}
+
+	public void setExecutionTime(String executionTime) {
+		this.executionTime = executionTime;
+	}
+	
 }

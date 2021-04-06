@@ -17,14 +17,14 @@ public class SnipeRequestPreparer {
 	public SnipeTransactionRequest createSnipeTransactionRequest(String fromAddress, String toAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei,String gasLimitGwei,
 							 String side, String orderType, String limitPrice, String stopPrice, 
-							 String percentage, String route) {
+							 String percentage, String route, boolean isFeeEligibile, String localDateTime) {
 		
 		SnipeTransactionRequest snipeTransactionRequest = new SnipeTransactionRequest();
 
 		snipeTransactionRequest.setFromAddress(fromAddress);
 		snipeTransactionRequest.setToAddress(toAddress);
 		snipeTransactionRequest.setInputTokenValueAmountAsBigDecimal(new BigDecimal(amount));
-		snipeTransactionRequest.setInputTokenValueAmountAsBigInteger(Convert.toWei(amount, Convert.Unit.GWEI).toBigInteger());
+		snipeTransactionRequest.setInputTokenValueAmountAsBigInteger(Convert.toWei(amount, Convert.Unit.ETHER).toBigInteger());
 		BigDecimal slipageInBips = (new BigDecimal(slipage).multiply(new BigDecimal(100))).divide(new BigDecimal(10000));
 		snipeTransactionRequest.setSlipage(slipageInBips);
 		snipeTransactionRequest.setSlipageInDouble(slipageInBips.doubleValue());
@@ -47,14 +47,21 @@ public class SnipeRequestPreparer {
 		snipeTransactionRequest.setPreApproved(false);
 		snipeTransactionRequest.setCreatedDateTime(LocalDateTime.now().toString());
 		snipeTransactionRequest.setUpdatedDateTime(LocalDateTime.now().toString());
-		snipeTransactionRequest.setWalletInfo(createWalletInfo());
+		snipeTransactionRequest.setWalletInfo(createWalletInfo(route));
+		snipeTransactionRequest.setFeeEligible(isFeeEligibile);
+		snipeTransactionRequest.setExecutionTime(localDateTime);
 		return snipeTransactionRequest;
 	}
 	
-	private WalletInfo createWalletInfo() {
+	private WalletInfo createWalletInfo(String route) {
 		WalletInfo walletInfo = new WalletInfo();
-		walletInfo.setPrivateKey("b05ae23814ff6cba5e640d4ac3dad7ead15e3ea73089077c01e784a97ecf4239");
-		walletInfo.setPublicKey("0xa827A97B88a462ECE07f53bc9A104c0e71983004");
+		if("PANCAKE".equalsIgnoreCase(route)) {
+			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
+			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");
+		}else {
+			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
+			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
+		}
 		return walletInfo;
 	}
 
