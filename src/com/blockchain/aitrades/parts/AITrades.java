@@ -110,7 +110,7 @@ public class AITrades {
 	@PostConstruct
 	public void createComposite(Composite parent1) {
 		
-		parent1.setLayout(new GridLayout(2, true));
+		parent1.setLayout(new GridLayout(1, true));
 		parent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		GridData data = new GridData(SWT.NONE, SWT.NONE, true, true);
 		parent1.setLayoutData(data);
@@ -153,14 +153,6 @@ public class AITrades {
 		routeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
 		routeComboitems.select(0);
 		routeComboitems.pack();
-
-		
-		routeComboitems.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				dexRoute = ((Combo)e.getSource()).getText().toString();
-			}
-		});
 		
 		Label fromLabel = new Label(topComposite, SWT.NONE);
 		fromLabel.setText("FROM ADDR             ");
@@ -250,6 +242,14 @@ public class AITrades {
 				}
 			}
 
+		});
+		
+		
+		routeComboitems.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dexRoute = ((Combo)e.getSource()).getText().toString();
+			}
 		});
 		
 		Label orderTypeLabel = new Label(topComposite, SWT.NONE);
@@ -399,7 +399,11 @@ public class AITrades {
 		    public void widgetSelected(SelectionEvent event) {
 		    	Button btn = (Button) event.getSource();
 		    	isExecition = btn.getSelection();
-		    	time.setEnabled(true);
+		    	if(isExecition) {
+		    		time.setEnabled(true);
+		    	}else {
+		    		time.setEnabled(false);
+		    	}
 		    }
 		});
 		
@@ -457,11 +461,6 @@ public class AITrades {
 				String limitPrice =  limitPriceText.getText();// 
 				String stopPrice = stopPriceText.getText();//
 				String percentage = percentText.getText();// trailpercent
-				
-				System.out.println("localdatetine Str -"+localDateTime);
-
-				System.out.println("localdatetine Str -"+localDateTime1);
-				
 				if(tradeOrSnipe.equalsIgnoreCase("Trade")) {
 					callCreateOrderService(fromAddress.getText(), 
 							toAddressText.getText(), 
@@ -529,7 +528,7 @@ public class AITrades {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
 					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime);
-			
+			snipeTransactionRequest.setExeTimeCheck(isExecition);
 			ObjectMapper mapper = new ObjectMapper();
 			System.out.println("order json "+mapper.writeValueAsString(snipeTransactionRequest));
 			
