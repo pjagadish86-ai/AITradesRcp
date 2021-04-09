@@ -1,9 +1,10 @@
-package com.blockchain.aitrades.domain;
+package com.aitrades.blockchain.eth.gateway.domain;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
+import com.blockchain.aitrades.domain.WalletInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -39,7 +40,11 @@ public class SnipeTransactionRequest {
 	private boolean hasFee;
 	private String gasMode;
 	
+	private boolean exeTimeCheck;
+	private String executionTime;
+	
 	private BigDecimal slipage;
+	
 	private Double slipageInDouble;
 	
 	private long deadLine;
@@ -66,9 +71,29 @@ public class SnipeTransactionRequest {
 	
 	private String read;
 	
-	private boolean exeTimeCheck;
-	private String executionTime;
+	private String retryEnabled;
 	
+	private String doSell;
+	private String doSellPercentage;
+	
+	private String errorMessage;
+	
+	public boolean isExeTimeCheck() {
+		return exeTimeCheck;
+	}
+
+	public void setExeTimeCheck(boolean exeTimeCheck) {
+		this.exeTimeCheck = exeTimeCheck;
+	}
+
+	public String getExecutionTime() {
+		return executionTime;
+	}
+
+	public void setExecutionTime(String executionTime) {
+		this.executionTime = executionTime;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -110,7 +135,7 @@ public class SnipeTransactionRequest {
 	}
 
 	public BigInteger getInputTokenValueAmountAsBigInteger() {
-		return  inputTokenValueAmountAsBigInteger;
+		return inputTokenValueAmountAsBigInteger;
 	}
 
 	public void setInputTokenValueAmountAsBigInteger(BigInteger inputTokenValueAmountAsBigInteger) {
@@ -212,19 +237,6 @@ public class SnipeTransactionRequest {
 	public void setHasApproved(boolean hasApproved) {
 		this.hasApproved = hasApproved;
 	}
-	
-	public boolean isExeTimeCheck() {
-		return exeTimeCheck;
-	}
-
-	public void setExeTimeCheck(boolean exeTimeCheck) {
-		this.exeTimeCheck = exeTimeCheck;
-	}
-
-	@JsonIgnore
-	public BigDecimal slipageInBips() {
-		return (getSlipage().multiply(new BigDecimal(100))).divide(new BigDecimal(10000));
-	}
 
 	public long getDeadLine() {
 		if(this.deadLine <= 0) {
@@ -317,7 +329,7 @@ public class SnipeTransactionRequest {
 	public void setRead(String read) {
 		this.read = read;
 	}
-
+	
 	public Double getSlipageInDouble() {
 		return slipageInDouble;
 	}
@@ -326,12 +338,38 @@ public class SnipeTransactionRequest {
 		this.slipageInDouble = slipageInDouble;
 	}
 
-	public String getExecutionTime() {
-		return executionTime;
+
+	public String getRetryEnabled() {
+		return retryEnabled;
 	}
 
-	public void setExecutionTime(String executionTime) {
-		this.executionTime = executionTime;
+	public void setRetryEnabled(String retryEnabled) {
+		this.retryEnabled = retryEnabled;
 	}
 	
+	public String getDoSell() {
+		return doSell;
+	}
+
+	public void setDoSell(String doSell) {
+		this.doSell = doSell;
+	}
+
+	public String getDoSellPercentage() {
+		return doSellPercentage;
+	}
+
+	public void setDoSellPercentage(String doSellPercentage) {
+		this.doSellPercentage = doSellPercentage;
+	}
+	
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
+	}
+
+
 }

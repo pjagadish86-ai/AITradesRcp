@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
-import com.blockchain.aitrades.domain.SnipeTransactionRequest;
+import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.blockchain.aitrades.domain.WalletInfo;
 
 public class SnipeRequestPreparer {
@@ -15,14 +15,14 @@ public class SnipeRequestPreparer {
 	private static final String CUSTOM = "CUSTOM";
 	
 	public SnipeTransactionRequest createSnipeTransactionRequest(String fromAddress, String toAddress, String amount, 
-							 String slipage, String gasMode, String gasGwei,String gasLimitGwei,
-							 String side, String orderType, String limitPrice, String stopPrice, 
-							 String percentage, String route, boolean isFeeEligibile, String localDateTime) {
+																 String slipage, String gasMode, String gasGwei,String gasLimitGwei,
+																 String side, String orderType, String limitPrice, String stopPrice, 
+																 String percentage, String route, boolean isFeeEligibile, String localDateTime) {
 		
 		SnipeTransactionRequest snipeTransactionRequest = new SnipeTransactionRequest();
 
 		snipeTransactionRequest.setFromAddress(fromAddress);
-		snipeTransactionRequest.setToAddress(toAddress);
+		snipeTransactionRequest.setToAddress(toAddress.toString().trim());
 		snipeTransactionRequest.setInputTokenValueAmountAsBigDecimal(new BigDecimal(amount));
 		snipeTransactionRequest.setInputTokenValueAmountAsBigInteger(Convert.toWei(amount, Convert.Unit.ETHER).toBigInteger());
 		BigDecimal slipageInBips = (new BigDecimal(slipage).multiply(new BigDecimal(100))).divide(new BigDecimal(10000));

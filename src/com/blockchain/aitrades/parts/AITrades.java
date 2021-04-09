@@ -1,11 +1,5 @@
 package com.blockchain.aitrades.parts;
 
-import java.text.Format;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -35,9 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.blockchain.aitrades.domain.Order;
 import com.blockchain.aitrades.domain.OrderType;
-import com.blockchain.aitrades.domain.SnipeTransactionRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AITrades {
@@ -53,20 +47,23 @@ public class AITrades {
 	private Button tradeButton = null;
 	private Button snipeButton = null;
 	private String tradeOrSnipe=null;
-	
+	Text gasGweiText = null;
+	Text gasLimitText = null;
 	private Button buyButton = null;
 	private Button sellButton = null;
 	private String buyOrSell=null;
 	
 	private String orderTypeSelected = null;
 	private String dexRoute = "UNISWAP";
-	
+	Combo gasModeComboitems = null;
 	//snipe order : 
 	Text fromAddress = null;
 	Text toAddressText = null;
 	Text limitPriceText = null;
 	Text stopPriceText = null;
 	Text percentText = null;
+	Text takeProfitOrderLimit = null;
+	
 	Combo orderTypeLabelComboitems = null;
 	
 	boolean isFeeEligibile = false;
@@ -201,7 +198,8 @@ public class AITrades {
 		Label gasModeLabel = new Label(topComposite, SWT.NONE);
 		gasModeLabel.setText("GAS MODE           ");
 		gasModeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		Combo gasModeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
+		
+		gasModeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
 		String[] gasModetems = new String[] { "ULTRA", "FASTEST", "FAST", "STANDARD", "SAFELOW", CUSTOM};
 		gasModeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
 		gasModeComboitems.setItems(gasModetems);
@@ -211,13 +209,13 @@ public class AITrades {
 		
 		Label gasMinLabel = new Label(topComposite, SWT.NONE);// if gas mode is custom then enable gasprice
 		gasMinLabel.setText("GAS PRICE           ");
-		Text gasGweiText = new Text(topComposite, SWT.NONE);
+		gasGweiText = new Text(topComposite, SWT.NONE);
 		gasGweiText.setLayoutData(new GridData(100, 20));
 		gasMinLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
 		Label gasLimitLabel = new Label(topComposite, SWT.NONE);// if gas mode is custom then enable gasprice
 		gasLimitLabel.setText("GAS LIMIT           ");
-		Text gasLimitText = new Text(topComposite, SWT.NONE);
+		gasLimitText = new Text(topComposite, SWT.NONE);
 		gasLimitText.setLayoutData(new GridData(100, 20));
 		gasLimitLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
@@ -249,6 +247,22 @@ public class AITrades {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				dexRoute = ((Combo)e.getSource()).getText().toString();
+				if("PANCAKE".equalsIgnoreCase(dexRoute)) {
+					gasModeComboitems.select(5);
+					gasModeComboitems.setEnabled(false);
+					gasGweiText.setEditable(true);
+					gasLimitText.setEditable(true);
+					gasGweiText.setEnabled(true);
+					gasLimitText.setEnabled(true);
+					gasGweiText.setEnabled(true);
+					gasLimitText.setEditable(true);
+					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+					gasGweiText.setText("10");
+					gasLimitText.setText("217216");
+				}else {
+					gasModeComboitems.setEnabled(true);
+				}
 			}
 		});
 		
@@ -279,7 +293,12 @@ public class AITrades {
 		percentText.setLayoutData(new GridData(100, 20));
 		percentLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-	
+		Label takeProfitOrderLimitLabel = new Label(topComposite, SWT.NONE);// if gas mode is custom then enable gasprice
+		takeProfitOrderLimitLabel.setText("Take Profit Limt");
+		takeProfitOrderLimit = new Text(topComposite, SWT.NONE);
+		takeProfitOrderLimit.setLayoutData(new GridData(100, 20));
+		takeProfitOrderLimitLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		
 		orderTypeLabelComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -490,7 +509,10 @@ public class AITrades {
 									      limitPrice,
 									      stopPrice,
 									      percentage, 
-									      routeComboitems.getText(), isFeeEligibile, localDateTime);
+									      routeComboitems.getText(), 
+									      isFeeEligibile, 
+									      localDateTime);
+					
 				}
 			}
 		});
@@ -498,26 +520,36 @@ public class AITrades {
 	}
 	
 	private void callCreateOrderService(String fromAddress, String toAddress, String amount, 
-										  String slipage, String gasMode, String gasGwei, 
-										  String gasLimitGwei, String side,  
-										 String orderType, String limitPrice, 
-										 String stopPrice, String percentage, String route, boolean isFeeEligibile) {
+										String slipage, String gasMode, String gasGwei, 
+										String gasLimitGwei, String side,  
+										String orderType, String limitPrice, 
+										String stopPrice, String percentage, String route, boolean isFeeEligibile) {
 		try {
 			OrderRequestPreparer  orderRequestPreparer = new OrderRequestPreparer();
-			Order order = orderRequestPreparer.createOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, 
-					side, orderType, limitPrice, stopPrice, percentage, route, isFeeEligibile);
+			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
+									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
 			
 			ObjectMapper mapper = new ObjectMapper();
 			System.out.println("order json "+mapper.writeValueAsString(order));
-			
-			HttpEntity<Order> httpEntity = new HttpEntity<Order>(order,createSecurityHeaders());
-			RestTemplate restTemplate = new RestTemplate();
-			ResponseEntity<String> responseEntity =  restTemplate.exchange(CREATE_ORDER, HttpMethod.POST, httpEntity, String.class);
-			Object respose =  responseEntity.getBody();
-			System.out.println("sucess " + respose);
+			callOrderService(order);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Order prepareOrder(String fromAddress, String toAddress, String amount, String slipage, String gasMode,
+			String gasGwei, String gasLimitGwei, String side, String orderType, String limitPrice, String stopPrice,
+			String percentage, String route, boolean isFeeEligibile, OrderRequestPreparer orderRequestPreparer) {
+		return orderRequestPreparer.createOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, 
+				side, orderType, limitPrice, stopPrice, percentage, route, isFeeEligibile);
+	}
+
+	private void callOrderService(Order order) {
+		HttpEntity<Order> httpEntity = new HttpEntity<Order>(order,createSecurityHeaders());
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<String> responseEntity =  restTemplate.exchange(CREATE_ORDER, HttpMethod.POST, httpEntity, String.class);
+		Object respose =  responseEntity.getBody();
+		System.out.println("sucess " + respose);
 	}
 	
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
@@ -531,12 +563,23 @@ public class AITrades {
 			snipeTransactionRequest.setExeTimeCheck(isExecition);
 			ObjectMapper mapper = new ObjectMapper();
 			System.out.println("order json "+mapper.writeValueAsString(snipeTransactionRequest));
+			// here we need to do profit take order;
 			
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			RestTemplate restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
 			System.out.println("sucess " +respose);
+			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
+				String snipeOrderId = (String)respose;
+				
+				Order order = prepareOrder(snipeTransactionRequest.getToAddress(), toAddress, amount, "5", gasMode, gasGwei, gasLimitGwei, "SELL", "MARKET",
+						   				   limitPrice, stopPrice, percentage, route, isFeeEligibile, new OrderRequestPreparer());
+				order.setParentSnipeId(snipeOrderId);
+				order.setAutoSnipeLimitSellTrailPercent(takeProfitOrderLimit.getText());
+				callOrderService(order);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -622,6 +665,14 @@ public class AITrades {
 					sellButton.setBackground(black);
 					buyButton.setBackground(black);
 					isExecutionOrderCheckBox.setEnabled(true);
+					takeProfitOrderLimit.setEnabled(true);
+					takeProfitOrderLimit.setEditable(true);
+					if("PANCAKE".equalsIgnoreCase(dexRoute)) {
+						gasGweiText.setEnabled(true);
+						gasLimitText.setEditable(true);
+						gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+						gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+					}
 				} else {
 					fromAddress.setText("");
 					tradeButton.setBackground(lightGreenColor);
@@ -641,6 +692,9 @@ public class AITrades {
 					buyButton.setBackground(greyColor);
 					isExecutionOrderCheckBox.setEnabled(false);
 					time.setEnabled(false);
+					
+					takeProfitOrderLimit.setEnabled(false);
+					takeProfitOrderLimit.setEditable(false);
 				}
 			}};
 		return sAdapter;
