@@ -5,16 +5,11 @@ import java.util.Date;
 
 import javax.annotation.PostConstruct;
 
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.RGB;
@@ -28,8 +23,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -43,7 +36,7 @@ import com.blockchain.aitrades.domain.Order;
 import com.blockchain.aitrades.domain.OrderType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class AITrades {
+public class AITradesV2 {
 	
 	private static final String CUSTOM = "CUSTOM";
 	private static final String CREATE_ORDER = "http://localhost:8080/aitrades/eth-gateway/order/api/v1/createOrder";
@@ -105,85 +98,34 @@ public class AITrades {
 	RGB rgbLightBlue = new RGB(31,105,119);
 	Color lightBlueColor = new Color(device, rgbLightBlue);
 	
-	TableViewer histroyTableViewer = null;
+	
 	
 	RGB rgbWhite = new RGB(255, 255, 255);
 	Color whiteColor = new Color(device, rgbWhite);
 	
 	String localDateTime =  null;
 	String localDateTime1 =  null;
-	private String ethWalletPublicKey = "0x7B74B57c89A73145Fe1915f45d8c23682fF78341";
-	private String bscWalletPublicKey = "0xF007afdB97c3744762F953C07CD45Dd237663C3F";
 	
 	@PostConstruct
 	public void createComposite(Composite parent1) {
 		
 		parent1.setLayout(new GridLayout(1, true));
 		parent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
-		GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
+		GridData data = new GridData(SWT.NONE, SWT.NONE, true, true);
 		parent1.setLayoutData(data);
 		data.minimumHeight=100;
 		
 		Composite parent = new Composite(parent1, SWT.NONE);
-		parent.setLayout(new GridLayout(2, true));
+		parent.setLayout(new GridLayout(1, true));
 		parent.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		parent.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
-		
-		Composite orderHistoryParent = new Composite(parent1, SWT.FILL);
-		orderHistoryParent.setLayout(new GridLayout(16, true));
-		orderHistoryParent.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
-		//orderHistoryParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
-		histroyTableViewer = new TableViewer(orderHistoryParent);
-		histroyTableViewer.setContentProvider(new ArrayContentProvider());
-		createColumns(orderHistoryParent, histroyTableViewer);
-		final Table table = histroyTableViewer.getTable();
-	    table.setHeaderVisible(true);
-	    table.setLinesVisible(true);
-	    table.setHeaderBackground(device.getSystemColor(SWT.COLOR_TITLE_BACKGROUND_GRADIENT));
-	    
-	    Button refreshButton=   new Button(orderHistoryParent, SWT.PUSH);
-	    refreshButton.setText("                                              Refresh                                         ");
-	    refreshButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-	    refreshButton.setBackground(black);
-	    refreshButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
-				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
-				histroyTableViewer.refresh();
-			}
-		});
-		
-	    histroyTableViewer.setContentProvider(new ArrayContentProvider());
 
-		GridData gridData = new GridData();
-        gridData.verticalAlignment = GridData.FILL;
-        gridData.horizontalSpan = 2;
-        gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
-        gridData.horizontalAlignment = GridData.FILL;
-        histroyTableViewer.getControl().setLayoutData(gridData);
-        
-		Composite tradeParent = new Composite(parent, SWT.NONE);
-		tradeParent.setLayout(new GridLayout(1, true));
-		tradeParent.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
-
-		Composite topComposite = new Composite(tradeParent, SWT.BORDER);
-		topComposite.setLayout(new GridLayout(2, true));
-		GridData topGriddate = new GridData(SWT.NONE, SWT.NONE, true, true);
-		topComposite.setLayoutData(topGriddate);
-
-		Composite topBtnCompositetrade = new Composite(topComposite, SWT.NONE);
-		topBtnCompositetrade.setLayout( new GridLayout(1, true));
-		topBtnCompositetrade.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
+		Composite topBtnComposite = new Composite(parent, SWT.NONE);
+		topBtnComposite.setLayout( new GridLayout(2, true));
+		topBtnComposite.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
 		
-		Composite topBtnCompositesell = new Composite(topComposite, SWT.NONE);
-		topBtnCompositesell.setLayout( new GridLayout(1, true));
-		topBtnCompositesell.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
-		
-		tradeButton = new Button(topBtnCompositetrade, SWT.PUSH);
-		snipeButton = new Button(topBtnCompositesell, SWT.PUSH);
+		tradeButton = new Button(topBtnComposite, SWT.PUSH);
+		snipeButton = new Button(topBtnComposite, SWT.PUSH);
 	
 		tradeButton.setText("                                              TRADE                                        ");
 		tradeButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
@@ -194,6 +136,12 @@ public class AITrades {
 		snipeButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		snipeButton.setBackground(black);
 		snipeButton.addSelectionListener(getButtonSelectionAdapter());
+		
+		
+		Composite topComposite = new Composite(parent, SWT.NONE);
+		topComposite.setLayout(new GridLayout(2, true));
+		topComposite.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
+		
 		
 		Label routeLabel = new Label(topComposite, SWT.NONE);
 		routeLabel.setText("DEX                 ");
@@ -493,21 +441,14 @@ public class AITrades {
 				    localDateTime = String.format("%tY-%<tm-%<tdT%<tH:%<tM:%<tS", date);
 			    }
 		});
-		Composite sideButtonComposite = new Composite(topComposite, SWT.NONE);
-		GridLayout sidetopCompositeLayout = new GridLayout(1, false);
+		Composite sideButtonComposite = new Composite(parent, SWT.NONE);
+		GridLayout sidetopCompositeLayout = new GridLayout(2, false);
 		sideButtonComposite.setLayout(sidetopCompositeLayout);
 		sideButtonComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		
-		Composite sideButtonComposite1 = new Composite(topComposite, SWT.NONE);
-		GridLayout sidetopCompositeLayout1 = new GridLayout(1, false);
-		sideButtonComposite1.setLayout(sidetopCompositeLayout1);
-		sideButtonComposite1.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
-		
 		buyButton = new Button(sideButtonComposite, SWT.PUSH);
 		buyButton.setSize(100, 25);
-		sellButton = new Button(sideButtonComposite1, SWT.PUSH);
+		sellButton = new Button(sideButtonComposite, SWT.PUSH);
 		sellButton.setSize(1000, 25);
 		buyButton.setText("                                              BUY                                         ");
 		buyButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
@@ -520,13 +461,9 @@ public class AITrades {
 		sellButton.addSelectionListener(getButtonSelectionAdapter1());
 		
 		//addButtonComposite(topComposite); //TODO:  Get order Type and order type values based on type selected Button clicked i.e limit or stop or trailstop and those associated values
-		Composite palceOrderComposite = new Composite(tradeParent, SWT.NONE);
-		GridLayout palceOrderCompositeLayout = new GridLayout(1, false);
-		palceOrderComposite.setLayout(palceOrderCompositeLayout);
-		palceOrderComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
 		//place order
-		placeOrderButton = new Button(palceOrderComposite, SWT.PUSH);
+		placeOrderButton = new Button(parent, SWT.PUSH);
 		placeOrderButton.setText("                                                                                                       Place Order                                                                                      ");
 		placeOrderButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		placeOrderButton.setBackground(greenColor);
@@ -596,156 +533,6 @@ public class AITrades {
 		parent1.pack();
 	}
 	
-	private void createColumns(Composite orderHistoryParent, TableViewer histroyTableViewer) {
-
-        String[] titles = {"Order Id","ROUTE", "TRADETYPE", "FROM TICKER", "INPUT", "TOTICKER", "OUTPUT", "EXECUTEDPRICE", "ORDERSTATE", "APPROVEDHASH","APPROVEDHASH STATUS","SWAPPED HASH","SWAPPED HASH STATUS", "ORDERSIDE", "ERRORMESSAGE"};
-        int[] bounds = { 100, 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100};
-        // First column is for the first name
-        TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getId();
-            }
-        });
-        
-        col = createTableViewerColumn(titles[1], bounds[1], 1);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getRoute();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[2], bounds[2], 2);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getTradetype();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[3], bounds[3], 3);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getFromTickerSymbol();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[4], bounds[4], 4);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getInput();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[5], bounds[5], 5);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getToTickerSymbol();
-            }
-        });
-        
-//"EXECUTEDPRICE", "ORDERSTATE", "APPROVEDHASH","APPROVEDHASH STATUS","SWAPPED HASH","SWAPPED HASH STATUS", "ORDERSIDE", "ERRORMESSAGE"};
-
-        
-        col =createTableViewerColumn(titles[6], bounds[6], 6);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getOutput();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[7], bounds[7], 7);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getExecutedprice();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[8], bounds[8], 8);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getOrderstate();
-            }
-        });
-        
-        col =createTableViewerColumn(titles[9], bounds[9], 9);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getApprovedhash();
-            }
-        });
-        col =createTableViewerColumn(titles[10], bounds[10], 10);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getApprovedhashStatus();
-            }
-        });
-        col =createTableViewerColumn(titles[11], bounds[11], 11);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getSwappedhash();
-            }
-        });
-        col =createTableViewerColumn(titles[12], bounds[12], 12);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getSwappedhashStatus();
-            }
-        });
-        col =createTableViewerColumn(titles[13], bounds[13], 13);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getOrderside();
-            }
-        });
-        col =createTableViewerColumn(titles[14], bounds[14], 14);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getErrormessage();
-            }
-        });
-
-	}
-
-	 private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
-	        final TableViewerColumn viewerColumn = new TableViewerColumn(histroyTableViewer, SWT.NONE);
-	        final TableColumn column = viewerColumn.getColumn();
-	        column.setText(title);
-	        column.setWidth(bound);
-	        column.setResizable(true);
-	        return viewerColumn;
-	    }
-
-
 	private void callCreateOrderService(String fromAddress, String toAddress, String amount, 
 										String slipage, String gasMode, String gasGwei, 
 										String gasLimitGwei, String side,  
