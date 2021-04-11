@@ -3,6 +3,7 @@ package com.blockchain.aitrades.parts;
 public class OrderHistory {
 
 	private String id;
+	private String orderId;
 	private String route;
 	private String tradetype;
 	private String fromTickerSymbol;
@@ -110,6 +111,13 @@ public class OrderHistory {
 	public void setErrormessage(String errormessage) {
 		this.errormessage = errormessage;
 	}
-	
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
 	
 }

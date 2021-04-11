@@ -14,7 +14,6 @@ import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.RGB;
@@ -134,18 +133,13 @@ public class AITrades {
 		orderHistoryParent.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		//orderHistoryParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		histroyTableViewer = new TableViewer(orderHistoryParent);
+		histroyTableViewer = new TableViewer(parent1);
 		histroyTableViewer.setContentProvider(new ArrayContentProvider());
-		createColumns(orderHistoryParent, histroyTableViewer);
-		final Table table = histroyTableViewer.getTable();
-	    table.setHeaderVisible(true);
-	    table.setLinesVisible(true);
-	    table.setHeaderBackground(device.getSystemColor(SWT.COLOR_TITLE_BACKGROUND_GRADIENT));
-	    
-	    Button refreshButton=   new Button(orderHistoryParent, SWT.PUSH);
-	    refreshButton.setText("                                              Refresh                                         ");
-	    refreshButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-	    refreshButton.setBackground(black);
+		
+		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
+	    refreshButton.setText("Refresh");
+	    refreshButton.setForeground(lightBlueColor);
+	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 	    refreshButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -154,7 +148,12 @@ public class AITrades {
 				histroyTableViewer.refresh();
 			}
 		});
-		
+		createColumns(orderHistoryParent, histroyTableViewer);
+		final Table table = histroyTableViewer.getTable();
+	    table.setHeaderVisible(true);
+	    table.setLinesVisible(true);
+	    table.setHeaderBackground(device.getSystemColor(SWT.COLOR_TITLE_BACKGROUND_GRADIENT));
+	    
 	    histroyTableViewer.setContentProvider(new ArrayContentProvider());
 
 		GridData gridData = new GridData();
@@ -598,7 +597,7 @@ public class AITrades {
 	
 	private void createColumns(Composite orderHistoryParent, TableViewer histroyTableViewer) {
 
-        String[] titles = {"Order Id","ROUTE", "TRADETYPE", "FROM TICKER", "INPUT", "TOTICKER", "OUTPUT", "EXECUTEDPRICE", "ORDERSTATE", "APPROVEDHASH","APPROVEDHASH STATUS","SWAPPED HASH","SWAPPED HASH STATUS", "ORDERSIDE", "ERRORMESSAGE"};
+        String[] titles = {"Order Id","Route", "Trade", "From Ticker", "Input Token Amount", "To Ticker", "Output Token", "Executed Price", "Order State", "Approve Hash","Approve Status","Swap Hash","Swap Hash Status", "Order Side", "Error Msg"};
         int[] bounds = { 100, 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100};
         // First column is for the first name
         TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
@@ -606,7 +605,7 @@ public class AITrades {
             @Override
             public String getText(Object element) {
                 OrderHistory p = (OrderHistory) element;
-                return p.getId();
+                return p.getOrderId();
             }
         });
         

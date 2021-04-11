@@ -1,31 +1,47 @@
 package com.blockchain.aitrades.parts;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+
+import com.aitrades.blockchain.framework.UUIDGenerator;
+
 public class OrderHistroyRetriever {
+	
+	private static final String ORDER_HISTORY = "http://localhost:8080/aitrades/eth-gateway/order/api/v1/orderHistory";
 
 	public List<OrderHistory> retrieveOrderHistroy(String ethWalletPublicKey, String bscWalletPublicKey) {
-		List<OrderHistory> histories = new ArrayList<>();
-		System.out.println("Refresh clicked");
-		OrderHistory history = new OrderHistory();
-		history.setId("ID");
-		history.setRoute("PANCAKE");
-		history.setTradetype("SNIPE");
-		history.setFromTickerSymbol("BNB");
-		history.setInput("0.1");
-		history.setToTickerSymbol("ORK");
-		history.setOutput("312.12");
-		history.setExecutedprice("$2.19");
-		history.setOrderstate("FILLED");
-		history.setApprovedhash("0x050182d8b62d93f7d893a4ab3346aaa818c53eae~UNISWAP~0xad6d458402f60fd3bd25163575031acdce07538d");
-		history.setApprovedhashStatus("SUCCESS");
-		history.setSwappedhash("0x64e71aa7582b1b11a4f5547b01bfeb978b76c35e80d0f3e61c67575d3fa040cd");
-		history.setSwappedhashStatus("SUCCESS");
-		history.setOrderside("BUY");
-		history.setErrormessage("");
-		histories.add(history);
-		return histories;
+		return fetchOrderHistories(ethWalletPublicKey, bscWalletPublicKey);
+	}
+	
+	private List<OrderHistory> fetchOrderHistories(String ethWalletPublicKey, String bscWalletPublicKey) {
+		HttpEntity<OrderHistoryRequest> httpEntity = new HttpEntity<OrderHistoryRequest>(prepareOrderHistoryRequest(ethWalletPublicKey, bscWalletPublicKey),createSecurityHeaders());
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
+		List<OrderHistory> respose =  responseEntity.getBody().getOrderHistories();
+		System.out.println("sucess " + respose);
+		return respose;
 	}
 
+	private OrderHistoryRequest prepareOrderHistoryRequest(String ethWalletPublicKey, String bscWalletPublicKey) {
+		OrderHistoryRequest orderHistoryRequest = new OrderHistoryRequest();
+		orderHistoryRequest.setId(UUIDGenerator.nextHex(UUIDGenerator.TYPE1));
+		orderHistoryRequest.setEthWalletPublicKey(ethWalletPublicKey);
+		orderHistoryRequest.setBscWalletPublicKey(bscWalletPublicKey);
+		return orderHistoryRequest;
+	}
+
+	private MultiValueMap<String, String> createSecurityHeaders() {
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.set("public-key", "publickey");
+		httpHeaders.set("token", "securityToken");
+		httpHeaders.set("auth-source-sys", "LDAP");
+		return httpHeaders;
+	}
+	
 }
