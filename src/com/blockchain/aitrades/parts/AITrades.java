@@ -533,11 +533,11 @@ public class AITrades {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-//				int callService = confirmServiceCall(parent);
-//				
-//				if(callService == 256) {	
-//					return;
-//				}
+				int callService = confirmServiceCall(parent);
+				
+				if(callService == 256) {	
+					return;
+				}
 				placeOrderButton.addKeyListener(new KeyListener() {
 					
 					@Override
@@ -547,7 +547,7 @@ public class AITrades {
 					
 					@Override
 					public void keyPressed(KeyEvent e) {
-						placeOrderButton.setEnabled(false);
+						//placeOrderButton.setEnabled(false);
 					}
 				});
 				//parent.requestLayout();
@@ -557,10 +557,10 @@ public class AITrades {
 				String stopPrice = stopPriceText.getText();//
 				String percentage = percentText.getText();// trailpercent
 				if(tradeOrSnipe.equalsIgnoreCase("Trade")) {
-					callCreateOrderService(fromAddress.getText(), 
-							toAddressText.getText(), 
-						    inputAmountText.getText(),
-						    slipagelabelText.getText(),
+					callCreateOrderService(fromAddress.getText().trim(), 
+							toAddressText.getText().trim(), 
+						    inputAmountText.getText().trim(),
+						    slipagelabelText.getText().trim(),
 						    gasModeComboitems.getText(), 
 						    gasGweiText.getText(),
 						    gasLimitText.getText(),
@@ -573,10 +573,10 @@ public class AITrades {
 						    isFeeEligibile
 						    );
 				}else {
-					callSnipeOrderService(fromAddress.getText(), 
-										  toAddressText.getText(), 
-									      inputAmountText.getText(),
-									      slipagelabelText.getText(),
+					callSnipeOrderService(fromAddress.getText().trim(), 
+										  toAddressText.getText().trim(), 
+									      inputAmountText.getText().trim(),
+									      slipagelabelText.getText().trim(),
 									      gasModeComboitems.getText(), 
 									      gasGweiText.getText(),
 									      gasLimitText.getText(),
@@ -589,7 +589,7 @@ public class AITrades {
 									      isFeeEligibile, 
 									      localDateTime);
 				}
-				placeOrderButton.setEnabled(true);	
+				//placeOrderButton.setEnabled(true);	
 			}
 		});
 		parent1.pack();
@@ -918,7 +918,7 @@ public class AITrades {
 					buyButton.setBackground(greyColor);
 					isExecutionOrderCheckBox.setEnabled(false);
 					time.setEnabled(false);
-					
+					gasModeComboitems.setEnabled(true);
 					takeProfitOrderLimit.setEnabled(false);
 					takeProfitOrderLimit.setEditable(false);
 				}
