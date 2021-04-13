@@ -542,12 +542,11 @@ public class AITrades {
 					
 					@Override
 					public void keyReleased(KeyEvent e) {
-						
 					}
 					
 					@Override
 					public void keyPressed(KeyEvent e) {
-						//placeOrderButton.setEnabled(false);
+						placeOrderButton.setEnabled(false);
 					}
 				});
 				//parent.requestLayout();
@@ -589,7 +588,6 @@ public class AITrades {
 									      isFeeEligibile, 
 									      localDateTime);
 				}
-				//placeOrderButton.setEnabled(true);	
 			}
 		});
 		parent1.pack();
@@ -760,6 +758,8 @@ public class AITrades {
 			callOrderService(order);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally {
+			placeOrderButton.setEnabled(true);	
 		}
 	}
 
@@ -808,6 +808,8 @@ public class AITrades {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally {
+			placeOrderButton.setEnabled(true);	
 		}
 	}
 	
