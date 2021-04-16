@@ -87,8 +87,8 @@ public class AITrades {
 	Button isExecutionOrderCheckBox = null;
 	
 	
-	Text minLiquidityLabelVal = null;
-	Text liquidityVal = null;
+	Text minLiquidityText = null;
+	Text expectedTokensText = null;
 	
 	
 	Device device = Display.getCurrent();
@@ -567,19 +567,19 @@ public class AITrades {
 		minLiquidityLabel.setText("Min Liquidity");
 		minLiquidityLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		minLiquidityLabelVal = new Text(topComposite, SWT.NONE);
-		minLiquidityLabelVal.setLayoutData(new GridData(100, 20));
-		minLiquidityLabelVal.setEnabled(false);
-		minLiquidityLabelVal.setEditable(false);
+		minLiquidityText = new Text(topComposite, SWT.NONE);
+		minLiquidityText.setLayoutData(new GridData(100, 20));
+		minLiquidityText.setEnabled(false);
+		minLiquidityText.setEditable(false);
 		
-		Label quantityLabel = new Label(topComposite, SWT.NONE);
-		quantityLabel.setText("IDO Expected Token");
-		quantityLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		Label expectedTokensLabel = new Label(topComposite, SWT.NONE);
+		expectedTokensLabel.setText("IDO Expected Token");
+		expectedTokensLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		liquidityVal = new Text(topComposite, SWT.NONE);
-		liquidityVal.setLayoutData(new GridData(100, 20));
-		liquidityVal.setEnabled(false);
-		liquidityVal.setEditable(false);
+		expectedTokensText = new Text(topComposite, SWT.NONE);
+		expectedTokensText.setLayoutData(new GridData(100, 20));
+		expectedTokensText.setEnabled(false);
+		expectedTokensText.setEditable(false);
 		
 		Composite sideButtonComposite = new Composite(topComposite, SWT.NONE);
 		GridLayout sidetopCompositeLayout = new GridLayout(1, false);
@@ -871,11 +871,11 @@ public class AITrades {
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
 					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime);
 			snipeTransactionRequest.setExeTimeCheck(isExecition);
-			if(minLiquidityLabelVal != null && minLiquidityLabelVal.getText() != null && !minLiquidityLabelVal.getText().isEmpty()) {
-				snipeTransactionRequest.setExpectedOutPutToken(new BigDecimal(minLiquidityLabelVal.getText()));
+			if(minLiquidityText != null && minLiquidityText.getText() != null && !minLiquidityText.getText().isEmpty()) {
+				snipeTransactionRequest.setLiquidityQuantity(Convert.toWei(minLiquidityText.getText(), Convert.Unit.GWEI).toBigInteger());
 			}
-			if(liquidityVal != null && liquidityVal.getText() != null && !liquidityVal.getText().isEmpty()) {
-				snipeTransactionRequest.setLiquidityQuantity(new BigInteger(liquidityVal.getText()));
+			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
+				snipeTransactionRequest.setExpectedOutPutToken(Convert.toWei(expectedTokensText.getText(), Convert.Unit.GWEI));
 			}
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			RestTemplate restTemplate = new RestTemplate();
@@ -956,11 +956,11 @@ public class AITrades {
 					toAddressText.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-SELL");
 				}
 				
-				minLiquidityLabelVal.setEditable(false);
-				minLiquidityLabelVal.setEnabled(false);
+				minLiquidityText.setEditable(false);
+				minLiquidityText.setEnabled(false);
 				
-				liquidityVal.setEditable(false);
-				liquidityVal.setEnabled(false);
+				expectedTokensText.setEditable(false);
+				expectedTokensText.setEnabled(false);
 				
 			}};
 		return sAdapter;
@@ -1008,10 +1008,10 @@ public class AITrades {
 						gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 						gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					}
-					minLiquidityLabelVal.setEditable(true);
-					minLiquidityLabelVal.setEnabled(true);
-					liquidityVal.setEditable(true);
-					liquidityVal.setEnabled(true);
+					minLiquidityText.setEditable(true);
+					minLiquidityText.setEnabled(true);
+					expectedTokensText.setEditable(true);
+					expectedTokensText.setEnabled(true);
 					
 				} else {
 					fromAddress.setText("");
@@ -1036,11 +1036,11 @@ public class AITrades {
 					takeProfitOrderLimit.setEnabled(false);
 					takeProfitOrderLimit.setEditable(false);
 					
-					minLiquidityLabelVal.setEditable(false);
-					minLiquidityLabelVal.setEnabled(false);
+					minLiquidityText.setEditable(false);
+					minLiquidityText.setEnabled(false);
 					
-					liquidityVal.setEditable(false);
-					liquidityVal.setEnabled(false);
+					expectedTokensText.setEditable(false);
+					expectedTokensText.setEnabled(false);
 					
 				}
 			}};
