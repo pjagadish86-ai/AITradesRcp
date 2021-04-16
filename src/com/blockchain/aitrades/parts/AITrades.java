@@ -1,5 +1,10 @@
 package com.blockchain.aitrades.parts;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -81,6 +86,11 @@ public class AITrades {
 	String executionTime = "";
 	Button isExecutionOrderCheckBox = null;
 	
+	
+	Text minLiquidityLabelVal = null;
+	Text liquidityVal = null;
+	
+	
 	Device device = Display.getCurrent();
 	RGB rgbRed = new RGB(255, 0, 0);
 	Color redColor = new Color(device, rgbRed);
@@ -123,6 +133,48 @@ public class AITrades {
 		parent1.setLayoutData(data);
 		data.minimumHeight=100;
 		
+		Composite timeComposite = new Composite(parent1, SWT.NONE);
+		timeComposite.setLayout(new GridLayout(2, true));
+		timeComposite.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
+		GridData data1 = new GridData(SWT.FILL, SWT.FILL, true, true);
+		timeComposite.setLayoutData(data1);
+		
+		Display display = Display.getDefault();
+			Label UTCTimeLabel = new Label(timeComposite, SWT.NONE);
+			UTCTimeLabel.setText("UTC Time: ");
+			UTCTimeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+			Text utcTimeText = new Text(timeComposite, SWT.BOLD);
+			utcTimeText.setBackground(device.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+			utcTimeText.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+			utcTimeText.setLayoutData(new GridData(300, 20));
+			utcTimeText.setEditable(false);
+			utcTimeText.setEnabled(false);
+			utcTimeText.setTextDirection(SWT.AUTO_TEXT_DIRECTION);
+		    
+			Label currentTimeLabel = new Label(timeComposite, SWT.NONE);
+			currentTimeLabel.setText("Current Time: ");
+			currentTimeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+			Text currentTimeText = new Text(timeComposite, SWT.BOLD);
+			currentTimeText.setLayoutData(new GridData(300, 20));
+			currentTimeText.setEditable(false);
+			currentTimeText.setTextDirection(SWT.AUTO_TEXT_DIRECTION);
+			currentTimeText.setEnabled(false);
+			currentTimeText.setBackground(device.getSystemColor(SWT.COLOR_INFO_BACKGROUND));
+			currentTimeText.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+			
+			
+			display.timerExec(1000, new Runnable() {
+				@Override
+				public void run() {
+					currentTimeText.setText(Instant.now().atZone(ZoneId.systemDefault()).toString());
+					utcTimeText.setText(Instant.now().toString());
+					 display.timerExec( 1000, this );
+				}
+			});
+			
+			
+			
+		
 		Composite parent = new Composite(parent1, SWT.NONE);
 		parent.setLayout(new GridLayout(2, true));
 		parent.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
@@ -136,6 +188,24 @@ public class AITrades {
 		histroyTableViewer = new TableViewer(parent1);
 		histroyTableViewer.setContentProvider(new ArrayContentProvider());
 		
+		createColumns(orderHistoryParent, histroyTableViewer);
+		final Table table = histroyTableViewer.getTable();
+	    table.setHeaderVisible(true);
+	    GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
+	    table.setLayoutData(gd_table);
+	    table.setLinesVisible(true);
+	    table.setHeaderBackground(device.getSystemColor(SWT.COLOR_TITLE_BACKGROUND_GRADIENT));
+	    table.setSize(100, 100);
+	    histroyTableViewer.setContentProvider(new ArrayContentProvider());
+
+		GridData gridData = new GridData();
+        gridData.verticalAlignment = GridData.FILL;
+        gridData.horizontalSpan = 2;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.grabExcessVerticalSpace = true;
+        gridData.horizontalAlignment = GridData.FILL;
+        gridData.minimumHeight=50;
+        histroyTableViewer.getControl().setLayoutData(gridData);
 		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
 	    refreshButton.setText("Refresh");
 	    refreshButton.setForeground(lightBlueColor);
@@ -148,23 +218,21 @@ public class AITrades {
 				histroyTableViewer.refresh();
 			}
 		});
-		createColumns(orderHistoryParent, histroyTableViewer);
-		final Table table = histroyTableViewer.getTable();
-	    table.setHeaderVisible(true);
-	    table.setLinesVisible(true);
-	    table.setHeaderBackground(device.getSystemColor(SWT.COLOR_TITLE_BACKGROUND_GRADIENT));
 	    
-	    histroyTableViewer.setContentProvider(new ArrayContentProvider());
-
-		GridData gridData = new GridData();
-        gridData.verticalAlignment = GridData.FILL;
-        gridData.horizontalSpan = 2;
-        gridData.grabExcessHorizontalSpace = true;
-        gridData.grabExcessVerticalSpace = true;
-        gridData.horizontalAlignment = GridData.FILL;
-        histroyTableViewer.getControl().setLayoutData(gridData);
-        
+//	    display.timerExec(1000, new Runnable() {
+//			@Override
+//			public void run() {
+//				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
+//				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+//				histroyTableViewer.refresh();
+//				display.timerExec( 1000, this );
+//			}
+//		});
+		Composite orderHistoryParent1 = new Composite(parent1, SWT.FILL);
+		orderHistoryParent1.setLayout(new GridLayout(1, true));
+		orderHistoryParent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		Composite tradeParent = new Composite(parent, SWT.NONE);
+		
 		tradeParent.setLayout(new GridLayout(1, true));
 		tradeParent.setLayoutData(new GridData(SWT.NONE, SWT.NONE, true, true));
 
@@ -303,16 +371,17 @@ public class AITrades {
 				if("PANCAKE".equalsIgnoreCase(dexRoute)) {
 					gasModeComboitems.select(5);
 					gasModeComboitems.setEnabled(false);
-					gasGweiText.setEditable(true);
-					gasLimitText.setEditable(true);
-					gasGweiText.setEnabled(true);
-					gasLimitText.setEnabled(true);
-					gasGweiText.setEnabled(true);
-					gasLimitText.setEditable(true);
+					gasGweiText.setEditable(false);
+					gasLimitText.setEditable(false);
+					gasGweiText.setEnabled(false);
+					gasLimitText.setEnabled(false);
+					
 					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasGweiText.setText("10");
-					gasLimitText.setText("217216");
+					gasGweiText.setEditable(false);
+					gasGweiText.setEditable(false);
+					gasLimitText.setText("165165");
 				}else {
 					gasModeComboitems.setEnabled(true);
 				}
@@ -492,6 +561,26 @@ public class AITrades {
 				    localDateTime = String.format("%tY-%<tm-%<tdT%<tH:%<tM:%<tS", date);
 			    }
 		});
+		
+		
+		Label minLiquidityLabel = new Label(topComposite, SWT.NONE);
+		minLiquidityLabel.setText("Min Liquidity");
+		minLiquidityLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		
+		minLiquidityLabelVal = new Text(topComposite, SWT.NONE);
+		minLiquidityLabelVal.setLayoutData(new GridData(100, 20));
+		minLiquidityLabelVal.setEnabled(false);
+		minLiquidityLabelVal.setEditable(false);
+		
+		Label quantityLabel = new Label(topComposite, SWT.NONE);
+		quantityLabel.setText("IDO Expected Token");
+		quantityLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		
+		liquidityVal = new Text(topComposite, SWT.NONE);
+		liquidityVal.setLayoutData(new GridData(100, 20));
+		liquidityVal.setEnabled(false);
+		liquidityVal.setEditable(false);
+		
 		Composite sideButtonComposite = new Composite(topComposite, SWT.NONE);
 		GridLayout sidetopCompositeLayout = new GridLayout(1, false);
 		sideButtonComposite.setLayout(sidetopCompositeLayout);
@@ -546,7 +635,6 @@ public class AITrades {
 					
 					@Override
 					public void keyPressed(KeyEvent e) {
-						placeOrderButton.setEnabled(false);
 					}
 				});
 				//parent.requestLayout();
@@ -752,14 +840,10 @@ public class AITrades {
 			OrderRequestPreparer  orderRequestPreparer = new OrderRequestPreparer();
 			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
 									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
-			
-			ObjectMapper mapper = new ObjectMapper();
-			System.out.println("order json "+mapper.writeValueAsString(order));
 			callOrderService(order);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
-			placeOrderButton.setEnabled(true);	
 		}
 	}
 
@@ -775,7 +859,7 @@ public class AITrades {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity =  restTemplate.exchange(CREATE_ORDER, HttpMethod.POST, httpEntity, String.class);
 		Object respose =  responseEntity.getBody();
-		System.out.println("sucess " + respose);
+		System.out.println("Order Id " + respose);
 	}
 	
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
@@ -787,15 +871,17 @@ public class AITrades {
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
 					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime);
 			snipeTransactionRequest.setExeTimeCheck(isExecition);
-			ObjectMapper mapper = new ObjectMapper();
-			System.out.println("order json "+mapper.writeValueAsString(snipeTransactionRequest));
-			// here we need to do profit take order;
-			
+			if(minLiquidityLabelVal != null && minLiquidityLabelVal.getText() != null && !minLiquidityLabelVal.getText().isEmpty()) {
+				snipeTransactionRequest.setExpectedOutPutToken(new BigDecimal(minLiquidityLabelVal.getText()));
+			}
+			if(liquidityVal != null && liquidityVal.getText() != null && !liquidityVal.getText().isEmpty()) {
+				snipeTransactionRequest.setLiquidityQuantity(new BigInteger(liquidityVal.getText()));
+			}
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			RestTemplate restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
-			System.out.println("sucess " +respose);
+			System.out.println("Snipe Order Id:  " +respose);
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
 				
@@ -809,9 +895,23 @@ public class AITrades {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally {
-			placeOrderButton.setEnabled(true);	
 		}
 	}
+	
+
+	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
+		BigDecimal preListingSalePrice = new BigDecimal(preListingSalePricetxt.getText()).setScale(8, RoundingMode.DOWN);
+		BigDecimal expectedToleranceTimes = new BigDecimal(expectedToleranceTimestxt.getText()).setScale(0, RoundingMode.DOWN);;
+		BigDecimal amountInBigDec = new BigDecimal(inputAmount).setScale(4, RoundingMode.DOWN);
+		
+		BigDecimal maxPriceTolerance = (preListingSalePrice.multiply(expectedToleranceTimes)).setScale(2, RoundingMode.DOWN);
+		
+		double result =  amountInBigDec.doubleValue() / maxPriceTolerance.doubleValue();
+		
+		return BigDecimal.valueOf(result).setScale(4, RoundingMode.DOWN);
+	}
+
+	
 	
 	private MultiValueMap<String, String> createSecurityHeaders() {
 		HttpHeaders httpHeaders = new HttpHeaders();
@@ -855,6 +955,13 @@ public class AITrades {
 					fromAddress.setMessage("");
 					toAddressText.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-SELL");
 				}
+				
+				minLiquidityLabelVal.setEditable(false);
+				minLiquidityLabelVal.setEnabled(false);
+				
+				liquidityVal.setEditable(false);
+				liquidityVal.setEnabled(false);
+				
 			}};
 		return sAdapter;
 	
@@ -901,6 +1008,11 @@ public class AITrades {
 						gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 						gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					}
+					minLiquidityLabelVal.setEditable(true);
+					minLiquidityLabelVal.setEnabled(true);
+					liquidityVal.setEditable(true);
+					liquidityVal.setEnabled(true);
+					
 				} else {
 					fromAddress.setText("");
 					tradeButton.setBackground(lightGreenColor);
@@ -923,6 +1035,13 @@ public class AITrades {
 					gasModeComboitems.setEnabled(true);
 					takeProfitOrderLimit.setEnabled(false);
 					takeProfitOrderLimit.setEditable(false);
+					
+					minLiquidityLabelVal.setEditable(false);
+					minLiquidityLabelVal.setEnabled(false);
+					
+					liquidityVal.setEditable(false);
+					liquidityVal.setEnabled(false);
+					
 				}
 			}};
 		return sAdapter;

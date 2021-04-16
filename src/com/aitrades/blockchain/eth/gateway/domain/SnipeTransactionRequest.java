@@ -30,6 +30,9 @@ public class SnipeTransactionRequest {
 	private BigDecimal inputTokenValueAmountAsBigDecimal;
 	private BigDecimal ouputTokenValueAmounttAsBigDecimal;
 	
+	private BigDecimal expectedOutPutToken;
+	private BigInteger liquidityQuantity;
+	
 	private WalletInfo walletInfo;
 	
 	private BigInteger gasPrice;
@@ -277,6 +280,14 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 	
+	public BigDecimal getExpectedOutPutToken() {
+		return expectedOutPutToken;
+	}
+
+	public void setExpectedOutPutToken(BigDecimal expectedOutPutToken) {
+		this.expectedOutPutToken = expectedOutPutToken;
+	}
+
 	@JsonIgnore
 	public boolean hasSniped() {
 		return isSnipe();
@@ -371,5 +382,12 @@ public class SnipeTransactionRequest {
 		this.errorMessage = errorMessage;
 	}
 
+	public BigInteger getLiquidityQuantity() {
+		return liquidityQuantity;
+	}
+
+	public void setLiquidityQuantity(BigInteger liquidityQuantity) {
+		this.liquidityQuantity = liquidityQuantity;
+	}
 
 }

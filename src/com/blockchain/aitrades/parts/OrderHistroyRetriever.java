@@ -24,7 +24,6 @@ public class OrderHistroyRetriever {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
 		List<OrderHistory> respose =  responseEntity.getBody().getOrderHistories();
-		System.out.println("sucess " + respose);
 		return respose;
 	}
 
