@@ -1,5 +1,6 @@
 package com.blockchain.aitrades.parts;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.http.HttpEntity;
@@ -7,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.aitrades.blockchain.framework.UUIDGenerator;
@@ -20,11 +22,19 @@ public class OrderHistroyRetriever {
 	}
 	
 	private List<OrderHistory> fetchOrderHistories(String ethWalletPublicKey, String bscWalletPublicKey) {
-		HttpEntity<OrderHistoryRequest> httpEntity = new HttpEntity<OrderHistoryRequest>(prepareOrderHistoryRequest(ethWalletPublicKey, bscWalletPublicKey),createSecurityHeaders());
-		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
-		List<OrderHistory> respose =  responseEntity.getBody().getOrderHistories();
-		return respose;
+		List<OrderHistory> respose = null;
+		RestTemplate restTemplate = null;
+		try {
+			HttpEntity<OrderHistoryRequest> httpEntity = new HttpEntity<OrderHistoryRequest>(prepareOrderHistoryRequest(ethWalletPublicKey, bscWalletPublicKey),createSecurityHeaders());
+			restTemplate = new RestTemplate();
+			ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
+			return responseEntity.getBody().getOrderHistories();
+		} catch (RestClientException e) {
+			e.printStackTrace();
+		}finally {
+			restTemplate = null;
+		}
+		return Collections.emptyList();
 	}
 
 	private OrderHistoryRequest prepareOrderHistoryRequest(String ethWalletPublicKey, String bscWalletPublicKey) {

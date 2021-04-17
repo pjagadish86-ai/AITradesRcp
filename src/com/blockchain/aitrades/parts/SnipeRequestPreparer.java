@@ -13,16 +13,23 @@ public class SnipeRequestPreparer {
 	private static final String BUY = "BUY";
 	private static final String WORKING = "WORKING";
 	private static final String CUSTOM = "CUSTOM";
-	
-	public SnipeTransactionRequest createSnipeTransactionRequest(String fromAddress, String toAddress, String amount, 
+
+
+	private static final String PANCAKE = "PANCAKE";
+	private static final String BNB_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+
+	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+
+	public SnipeTransactionRequest createSnipeTransactionRequest(String contractToInteract, String defaultWalletAddress, String amount, 
 																 String slipage, String gasMode, String gasGwei,String gasLimitGwei,
 																 String side, String orderType, String limitPrice, String stopPrice, 
 																 String percentage, String route, boolean isFeeEligibile, String localDateTime) {
 		
 		SnipeTransactionRequest snipeTransactionRequest = new SnipeTransactionRequest();
-
-		snipeTransactionRequest.setFromAddress(fromAddress);
-		snipeTransactionRequest.setToAddress(toAddress.toString().trim());
+		defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
+		
+		snipeTransactionRequest.setFromAddress(defaultWalletAddress);
+		snipeTransactionRequest.setToAddress(contractToInteract);
 		snipeTransactionRequest.setInputTokenValueAmountAsBigDecimal(new BigDecimal(amount));
 		snipeTransactionRequest.setInputTokenValueAmountAsBigInteger(Convert.toWei(amount, Convert.Unit.ETHER).toBigInteger());
 		BigDecimal slipageInBips = (new BigDecimal(slipage).multiply(new BigDecimal(100))).divide(new BigDecimal(10000));

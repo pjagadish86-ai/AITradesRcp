@@ -1,7 +1,6 @@
 package com.blockchain.aitrades.parts;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -45,7 +44,6 @@ import org.springframework.web.client.RestTemplate;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.blockchain.aitrades.domain.Order;
 import com.blockchain.aitrades.domain.OrderType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AITrades {
 	
@@ -53,10 +51,6 @@ public class AITrades {
 	private static final String CREATE_ORDER = "http://localhost:8080/aitrades/eth-gateway/order/api/v1/createOrder";
 	private static final String SNIPE_ORDER = "http://localhost:8080/aitrades/eth-gateway/snipe/api/v1/snipeOrder";
 	
-	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-
-	private static final String BNB_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-
 	private Button tradeButton = null;
 	private Button snipeButton = null;
 	private String tradeOrSnipe=null;
@@ -69,9 +63,10 @@ public class AITrades {
 	private String orderTypeSelected = null;
 	private String dexRoute = "UNISWAP";
 	Combo gasModeComboitems = null;
+	Text slipagelabelText = null;
 	//snipe order : 
-	Text fromAddress = null;
-	Text toAddressText = null;
+	Text contractInteraction = null;
+	Text inputAmountText = null;
 	Text limitPriceText = null;
 	Text stopPriceText = null;
 	Text percentText = null;
@@ -272,34 +267,25 @@ public class AITrades {
 		routeComboitems.select(0);
 		routeComboitems.pack();
 		
-		Label fromLabel = new Label(topComposite, SWT.NONE);
-		fromLabel.setText("FROM ADDR             ");
-		fromLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		
-		fromAddress = new Text(topComposite, SWT.NONE);
-		fromAddress.setLayoutData(new GridData(300, 20));
 		
 		Label inputAmountLabel = new Label(topComposite, SWT.NONE);
 		inputAmountLabel.setText("INPUT AMOUNT   ");
 		inputAmountLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		Text inputAmountText = new Text(topComposite, SWT.NONE);
+		inputAmountText = new Text(topComposite, SWT.NONE);
 		inputAmountText.setLayoutData(new GridData(100, 20));
 		
-		Label toAddressLabel = new Label(topComposite, SWT.NONE);
-		toAddressLabel.setText("TO ADDR          ");
-	
-		toAddressText = new Text(topComposite, SWT.NONE);
-		toAddressText.setLayoutData(new GridData(300, 20));
+		Label fromLabel = new Label(topComposite, SWT.NONE);
+		fromLabel.setText("Contract Address");
+		fromLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		contractInteraction = new Text(topComposite, SWT.NONE);
+		contractInteraction.setLayoutData(new GridData(300, 20));
 		
-		toAddressLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		
-		fromAddress.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-BUY");
-		toAddressText.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-SELL");
+
 		
 		//Slippage combo
 		Label slipagelabel = new Label(topComposite, SWT.NONE);
 		slipagelabel.setText("SLIPAGE            ");
-		Text slipagelabelText = new Text(topComposite, SWT.NONE);
+		slipagelabelText = new Text(topComposite, SWT.NONE);
 		slipagelabelText.setLayoutData(new GridData(100, 20));
 		slipagelabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
@@ -368,23 +354,11 @@ public class AITrades {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				dexRoute = ((Combo)e.getSource()).getText().toString();
-				if("PANCAKE".equalsIgnoreCase(dexRoute)) {
-					gasModeComboitems.select(5);
-					gasModeComboitems.setEnabled(false);
-					gasGweiText.setEditable(false);
-					gasLimitText.setEditable(false);
-					gasGweiText.setEnabled(false);
-					gasLimitText.setEnabled(false);
-					
-					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-					gasGweiText.setText("10");
-					gasGweiText.setEditable(false);
-					gasGweiText.setEditable(false);
-					gasLimitText.setText("165165");
-				}else {
-					gasModeComboitems.setEnabled(true);
-				}
+				gasModeComboitems.setEnabled(true);
+				gasLimitText.setEditable(true);
+				gasGweiText.setEnabled(true);
+				gasGweiText.setEditable(true);
+				gasLimitText.setEditable(true);
 			}
 		});
 		
@@ -644,8 +618,8 @@ public class AITrades {
 				String stopPrice = stopPriceText.getText();//
 				String percentage = percentText.getText();// trailpercent
 				if(tradeOrSnipe.equalsIgnoreCase("Trade")) {
-					callCreateOrderService(fromAddress.getText().trim(), 
-							toAddressText.getText().trim(), 
+					callCreateOrderService(contractInteraction.getText().trim(), 
+							"", 
 						    inputAmountText.getText().trim(),
 						    slipagelabelText.getText().trim(),
 						    gasModeComboitems.getText(), 
@@ -660,8 +634,8 @@ public class AITrades {
 						    isFeeEligibile
 						    );
 				}else {
-					callSnipeOrderService(fromAddress.getText().trim(), 
-										  toAddressText.getText().trim(), 
+					callSnipeOrderService(contractInteraction.getText().trim(), 
+										  "", 
 									      inputAmountText.getText().trim(),
 									      slipagelabelText.getText().trim(),
 									      gasModeComboitems.getText(), 
@@ -841,9 +815,12 @@ public class AITrades {
 			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
 									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
 			callOrderService(order);
+			clearValues();
 		} catch (Exception e) {
 			e.printStackTrace();
+			clearValues();
 		}finally {
+			clearValues();
 		}
 	}
 
@@ -866,6 +843,7 @@ public class AITrades {
 									   String gasMode, String gasGwei, String gasLimitGwei, String orderType,  
 									   String side, String limitPrice, String stopPrice, 
 									   String percentage, String route, boolean isFeeEligibile, String localDateTime) {
+		RestTemplate restTemplate = null;
 		try {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
@@ -878,9 +856,10 @@ public class AITrades {
 				snipeTransactionRequest.setExpectedOutPutToken(Convert.toWei(expectedTokensText.getText(), Convert.Unit.GWEI));
 			}
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
-			RestTemplate restTemplate = new RestTemplate();
+			restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
+			clearValues();
 			System.out.println("Snipe Order Id:  " +respose);
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
@@ -894,10 +873,21 @@ public class AITrades {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
+			clearValues();
 		}finally {
+			restTemplate = null;
+			clearValues();
 		}
 	}
 	
+
+	private void clearValues() {
+		contractInteraction.setText("");
+		inputAmountText.setText("");
+		gasLimitText.setText("");
+		gasGweiText.setText("");
+		slipagelabelText.setText("");
+	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
 		BigDecimal preListingSalePrice = new BigDecimal(preListingSalePricetxt.getText()).setScale(8, RoundingMode.DOWN);
@@ -946,16 +936,10 @@ public class AITrades {
 				if(e.getSource()!= null && "BUY".equalsIgnoreCase(selButton)) {
 					buyButton.setBackground(lightBlueColor);
 					sellButton.setBackground(black);
-					fromAddress.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-BUY");
-					toAddressText.setMessage("");
-					
 				} else {
 					sellButton.setBackground(redColor);
 					buyButton.setBackground(black);
-					fromAddress.setMessage("");
-					toAddressText.setMessage("ETH/WETH/BNB defaulted based on DEX ROUTE-SELL");
 				}
-				
 				minLiquidityText.setEditable(false);
 				minLiquidityText.setEnabled(false);
 				
@@ -977,13 +961,9 @@ public class AITrades {
 				if(e.getSource()!= null && "SNIPE".equalsIgnoreCase(selButton)) {
 					snipeButton.setBackground(lightGreenColor);
 					tradeButton.setBackground(black);
-					fromAddress.setText("PANCAKE".equalsIgnoreCase(dexRoute) ? BNB_ADDRESS : ETH_ADDRESS);
-					fromAddress.setEditable(false);
-					fromAddress.setEnabled(false);
 					limitPriceText.setEnabled(false);
 					stopPriceText.setEnabled(false);
 					percentText.setEnabled(false);
-					toAddressText.setMessage("");
 					limitPriceText.setEditable(false);
 					stopPriceText.setEnabled(false);
 					percentText.setEnabled(false);
@@ -1002,25 +982,18 @@ public class AITrades {
 					isExecutionOrderCheckBox.setEnabled(true);
 					takeProfitOrderLimit.setEnabled(true);
 					takeProfitOrderLimit.setEditable(true);
-					if("PANCAKE".equalsIgnoreCase(dexRoute)) {
-						gasGweiText.setEnabled(true);
-						gasLimitText.setEditable(true);
-						gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-						gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-					}
+					gasGweiText.setEnabled(true);
+					gasLimitText.setEditable(true);
 					minLiquidityText.setEditable(true);
 					minLiquidityText.setEnabled(true);
 					expectedTokensText.setEditable(true);
 					expectedTokensText.setEnabled(true);
 					
 				} else {
-					fromAddress.setText("");
 					tradeButton.setBackground(lightGreenColor);
 					snipeButton.setBackground(black);
 					orderTypeLabelComboitems.setEnabled(true);
 					orderTypeLabelComboitems.setEnabled(true);
-					fromAddress.setEditable(true);
-					fromAddress.setEnabled(true);
 					buyButton.setEnabled(true);
 					sellButton.setEnabled(true);
 					

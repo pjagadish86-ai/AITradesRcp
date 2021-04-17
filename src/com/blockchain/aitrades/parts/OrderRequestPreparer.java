@@ -28,7 +28,7 @@ public class OrderRequestPreparer {
 
 	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
-	public Order createOrder(String fromAddress, String toAddress, String amount, 
+	public Order createOrder(String contractToInteract, String defaultWalletAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei, String gasLimitGwei,
 							 String side, String orderType, String limitPrice, String stopPrice, 
 							 String percentage, String route, boolean isFeeEligibile) {
@@ -36,14 +36,14 @@ public class OrderRequestPreparer {
 		Order order = new Order();
 		
 		if(OrderSide.BUY.name().equalsIgnoreCase(side)) {
-			fromAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
+			contractToInteract = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
 		}
 		if(OrderSide.SELL.name().equalsIgnoreCase(side)) {
-			toAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;;
+			defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
 		}
 		
-		order.setFrom(createTickerEntity(route, amount, fromAddress, side));
-		order.setTo(createTickerEntity(route, null, toAddress, side));
+		order.setFrom(createTickerEntity(route, amount, contractToInteract, side));
+		order.setTo(createTickerEntity(route, null, defaultWalletAddress, side));
 		order.setOrderEntity(createOrderEntity(orderType, side, limitPrice, stopPrice, percentage));
 		order.setSlippage(createSlipage(slipage));
 		
