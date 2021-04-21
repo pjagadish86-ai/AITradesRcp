@@ -3,6 +3,7 @@ package com.blockchain.aitrades.parts;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
@@ -201,28 +202,28 @@ public class AITrades {
         gridData.horizontalAlignment = GridData.FILL;
         gridData.minimumHeight=50;
         histroyTableViewer.getControl().setLayoutData(gridData);
-		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
-	    refreshButton.setText("Refresh");
-	    refreshButton.setForeground(lightBlueColor);
-	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-	    refreshButton.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
-				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
-				histroyTableViewer.refresh();
-			}
-		});
-	    
-//	    display.timerExec(1000, new Runnable() {
+//		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
+//	    refreshButton.setText("Refresh");
+//	    refreshButton.setForeground(lightBlueColor);
+//	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+//	    refreshButton.addSelectionListener(new SelectionAdapter() {
 //			@Override
-//			public void run() {
+//			public void widgetSelected(SelectionEvent e) {
 //				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
 //				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 //				histroyTableViewer.refresh();
-//				display.timerExec( 1000, this );
 //			}
 //		});
+//	    
+	    display.timerExec(60000, new Runnable() {
+			@Override
+			public void run() {
+				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
+				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+				histroyTableViewer.refresh();
+				display.timerExec( 1000, this );
+			}
+		});
 		Composite orderHistoryParent1 = new Composite(parent1, SWT.FILL);
 		orderHistoryParent1.setLayout(new GridLayout(1, true));
 		orderHistoryParent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
@@ -657,8 +658,8 @@ public class AITrades {
 	
 	private void createColumns(Composite orderHistoryParent, TableViewer histroyTableViewer) {
 
-        String[] titles = {"Order Id","Route", "Trade", "From Ticker", "Input Token Amount", "To Ticker", "Output Token", "Executed Price", "Order State", "Approve Hash","Approve Status","Swap Hash","Swap Hash Status", "Order Side", "Error Msg"};
-        int[] bounds = { 100, 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100};
+        String[] titles = {"Order Id","Route", "Trade", "From Ticker", "Input Token Amount", "To Ticker", "Output Token", "Executed Price", "Order State", "Approve Hash","Approve Status","Swap Hash","Swap Hash Status", "Order Side", "Error Msg","Last Updated Time"};
+        int[] bounds = { 100, 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,100};
         // First column is for the first name
         TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
         col.setLabelProvider(new ColumnLabelProvider() {
@@ -792,6 +793,14 @@ public class AITrades {
                 return p.getErrormessage();
             }
         });
+        
+        col =createTableViewerColumn(titles[15], bounds[15], 15);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return LocalDateTime.now().toString();
+            }
+        });
 
 	}
 
@@ -853,7 +862,7 @@ public class AITrades {
 				snipeTransactionRequest.setLiquidityQuantity(Convert.toWei(minLiquidityText.getText(), Convert.Unit.GWEI).toBigInteger());
 			}
 			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
-				snipeTransactionRequest.setExpectedOutPutToken(Convert.toWei(expectedTokensText.getText(), Convert.Unit.GWEI));
+				snipeTransactionRequest.setExpectedOutPutToken(Convert.toWei(expectedTokensText.getText(), Convert.Unit.GWEI).toBigInteger());
 			}
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			restTemplate = new RestTemplate();
@@ -887,6 +896,9 @@ public class AITrades {
 		gasLimitText.setText("");
 		gasGweiText.setText("");
 		slipagelabelText.setText("");
+		minLiquidityText.setText("");
+		expectedTokensText.setText("");
+		takeProfitOrderLimit.setText("");
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {

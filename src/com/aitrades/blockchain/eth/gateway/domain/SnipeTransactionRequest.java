@@ -30,7 +30,7 @@ public class SnipeTransactionRequest {
 	private BigDecimal inputTokenValueAmountAsBigDecimal;
 	private BigDecimal ouputTokenValueAmounttAsBigDecimal;
 	
-	private BigDecimal expectedOutPutToken;
+	private BigInteger expectedOutPutToken;
 	private BigInteger liquidityQuantity;
 	
 	private WalletInfo walletInfo;
@@ -280,11 +280,11 @@ public class SnipeTransactionRequest {
 		return snipe;
 	}
 	
-	public BigDecimal getExpectedOutPutToken() {
+	public BigInteger getExpectedOutPutToken() {
 		return expectedOutPutToken;
 	}
 
-	public void setExpectedOutPutToken(BigDecimal expectedOutPutToken) {
+	public void setExpectedOutPutToken(BigInteger expectedOutPutToken) {
 		this.expectedOutPutToken = expectedOutPutToken;
 	}
 
