@@ -202,28 +202,28 @@ public class AITrades {
         gridData.horizontalAlignment = GridData.FILL;
         gridData.minimumHeight=50;
         histroyTableViewer.getControl().setLayoutData(gridData);
-//		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
-//	    refreshButton.setText("Refresh");
-//	    refreshButton.setForeground(lightBlueColor);
-//	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-//	    refreshButton.addSelectionListener(new SelectionAdapter() {
-//			@Override
-//			public void widgetSelected(SelectionEvent e) {
-//				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
-//				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
-//				histroyTableViewer.refresh();
-//			}
-//		});
-//	    
-	    display.timerExec(60000, new Runnable() {
+		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
+	    refreshButton.setText("Refresh");
+	    refreshButton.setForeground(lightBlueColor);
+	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+	    refreshButton.addSelectionListener(new SelectionAdapter() {
 			@Override
-			public void run() {
+			public void widgetSelected(SelectionEvent e) {
 				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
 				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 				histroyTableViewer.refresh();
-				display.timerExec( 1000, this );
 			}
 		});
+//	    
+//	    display.timerExec(60000, new Runnable() {
+//			@Override
+//			public void run() {
+//				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
+//				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+//				histroyTableViewer.refresh();
+//				display.timerExec( 1000, this );
+//			}
+//		});
 		Composite orderHistoryParent1 = new Composite(parent1, SWT.FILL);
 		orderHistoryParent1.setLayout(new GridLayout(1, true));
 		orderHistoryParent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
