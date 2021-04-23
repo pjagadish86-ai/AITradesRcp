@@ -932,7 +932,9 @@ public class AITrades {
 										history.getSlipage(), history.getGasPrice(),
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
-									System.out.println("Click refresh");
+									OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
+									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+									histroyTableViewer.refresh();
 								}
 							}
 						});
