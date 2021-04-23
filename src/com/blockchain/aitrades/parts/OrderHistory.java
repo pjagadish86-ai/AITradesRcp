@@ -19,6 +19,10 @@ public class OrderHistory {
 	private String orderside;
 	private String errormessage;
 	
+	private String slipage;
+	private String gasPrice;
+	private String gasLimit;
+	
 	public String getId() {
 		return id;
 	}
@@ -118,6 +122,30 @@ public class OrderHistory {
 
 	public void setOrderId(String orderId) {
 		this.orderId = orderId;
+	}
+
+	public String getSlipage() {
+		return slipage;
+	}
+
+	public void setSlipage(String slipage) {
+		this.slipage = slipage;
+	}
+
+	public String getGasPrice() {
+		return gasPrice;
+	}
+
+	public void setGasPrice(String gasPrice) {
+		this.gasPrice = gasPrice;
+	}
+
+	public String getGasLimit() {
+		return gasLimit;
+	}
+
+	public void setGasLimit(String gasLimit) {
+		this.gasLimit = gasLimit;
 	}
 	
 }

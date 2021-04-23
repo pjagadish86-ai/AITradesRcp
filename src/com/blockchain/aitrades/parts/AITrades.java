@@ -7,16 +7,25 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.viewers.TextCellEditor;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -34,14 +43,17 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
+import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.blockchain.aitrades.domain.Order;
 import com.blockchain.aitrades.domain.OrderType;
@@ -111,7 +123,7 @@ public class AITrades {
 	Color lightBlueColor = new Color(device, rgbLightBlue);
 	
 	TableViewer histroyTableViewer = null;
-	
+	Button refreshButton= null;
 	RGB rgbWhite = new RGB(255, 255, 255);
 	Color whiteColor = new Color(device, rgbWhite);
 	
@@ -119,6 +131,10 @@ public class AITrades {
 	String localDateTime1 =  null;
 	private String ethWalletPublicKey = "0x7B74B57c89A73145Fe1915f45d8c23682fF78341";
 	private String bscWalletPublicKey = "0xF007afdB97c3744762F953C07CD45Dd237663C3F";
+	
+	private Text retriggerSlipage = null;
+	private Text retriggerGasPrice = null;
+	private Text retriggerGasLimit = null;
 	
 	@PostConstruct
 	public void createComposite(Composite parent1) {
@@ -181,11 +197,12 @@ public class AITrades {
 		orderHistoryParent.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
 		//orderHistoryParent.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
-		histroyTableViewer = new TableViewer(parent1);
+		histroyTableViewer = new TableViewer(parent1, SWT.MULTI | SWT.H_SCROLL
+                | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER);
 		histroyTableViewer.setContentProvider(new ArrayContentProvider());
-		
 		createColumns(orderHistoryParent, histroyTableViewer);
 		final Table table = histroyTableViewer.getTable();
+		
 	    table.setHeaderVisible(true);
 	    GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 	    table.setLayoutData(gd_table);
@@ -201,8 +218,9 @@ public class AITrades {
         gridData.grabExcessVerticalSpace = true;
         gridData.horizontalAlignment = GridData.FILL;
         gridData.minimumHeight=50;
+        
         histroyTableViewer.getControl().setLayoutData(gridData);
-		Button refreshButton= new Button(orderHistoryParent, SWT.PUSH);
+		refreshButton= new Button(orderHistoryParent, SWT.PUSH);
 	    refreshButton.setText("Refresh");
 	    refreshButton.setForeground(lightBlueColor);
 	    refreshButton.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
@@ -597,7 +615,7 @@ public class AITrades {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				int callService = confirmServiceCall(parent);
+				int callService = confirmServiceCall(parent, "Please check DEX, From & To for Buy & Sell!!");
 				
 				if(callService == 256) {	
 					return;
@@ -657,11 +675,7 @@ public class AITrades {
 	}
 	
 	private void createColumns(Composite orderHistoryParent, TableViewer histroyTableViewer) {
-
-        String[] titles = {"Order Id","Route", "Trade", "From Ticker", "Input Token Amount", "To Ticker", "Output Token", "Executed Price", "Order State", "Approve Hash","Approve Status","Swap Hash","Swap Hash Status", "Order Side", "Error Msg","Last Updated Time"};
-        int[] bounds = { 100, 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,	 100,100};
-        // First column is for the first name
-        TableViewerColumn col = createTableViewerColumn(titles[0], bounds[0], 0);
+        TableViewerColumn col = createTableViewerColumn("Order Id", 100, 0);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -670,7 +684,7 @@ public class AITrades {
             }
         });
         
-        col = createTableViewerColumn(titles[1], bounds[1], 1);
+        col = createTableViewerColumn("Route", 100, 1);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -679,7 +693,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[2], bounds[2], 2);
+        col =createTableViewerColumn("Trade", 100, 2);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -688,7 +702,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[3], bounds[3], 3);
+        col =createTableViewerColumn("From Tkr", 100, 3);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -697,7 +711,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[4], bounds[4], 4);
+        col =createTableViewerColumn("Amount", 100, 4);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -706,7 +720,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[5], bounds[5], 5);
+        col =createTableViewerColumn("To Tkr", 100, 5);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -715,10 +729,7 @@ public class AITrades {
             }
         });
         
-//"EXECUTEDPRICE", "ORDERSTATE", "APPROVEDHASH","APPROVEDHASH STATUS","SWAPPED HASH","SWAPPED HASH STATUS", "ORDERSIDE", "ERRORMESSAGE"};
-
-        
-        col =createTableViewerColumn(titles[6], bounds[6], 6);
+        col =createTableViewerColumn("Amount", 100, 6);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -727,7 +738,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[7], bounds[7], 7);
+        col =createTableViewerColumn("Executed Price", 100, 7);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -736,7 +747,7 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[8], bounds[8], 8);
+        col =createTableViewerColumn("Order State", 100, 8);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -745,39 +756,24 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[9], bounds[9], 9);
+        col =createTableViewerColumn("Approved Status", 100, 9);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 OrderHistory p = (OrderHistory) element;
-                return p.getApprovedhash();
+                return p.getApprovedhashStatus() != null && !p.getApprovedhashStatus().isEmpty() ?  p.getApprovedhashStatus() : p.getApprovedhash();
             }
         });
-        col =createTableViewerColumn(titles[10], bounds[10], 10);
+        col =createTableViewerColumn("Swap Status", 100, 10);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 OrderHistory p = (OrderHistory) element;
-                return p.getApprovedhashStatus();
+                return p.getSwappedhashStatus() != null && !p.getSwappedhashStatus().isEmpty() ?  p.getSwappedhashStatus() : p.getSwappedhash();
             }
         });
-        col =createTableViewerColumn(titles[11], bounds[11], 11);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getSwappedhash();
-            }
-        });
-        col =createTableViewerColumn(titles[12], bounds[12], 12);
-        col.setLabelProvider(new ColumnLabelProvider() {
-            @Override
-            public String getText(Object element) {
-                OrderHistory p = (OrderHistory) element;
-                return p.getSwappedhashStatus();
-            }
-        });
-        col =createTableViewerColumn(titles[13], bounds[13], 13);
+
+        col =createTableViewerColumn("Order Side", 100, 11);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -785,7 +781,7 @@ public class AITrades {
                 return p.getOrderside();
             }
         });
-        col =createTableViewerColumn(titles[14], bounds[14], 14);
+        col =createTableViewerColumn("Error Msg", 100, 12);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -794,14 +790,164 @@ public class AITrades {
             }
         });
         
-        col =createTableViewerColumn(titles[15], bounds[15], 15);
+        col =createTableViewerColumn("Slipage", 100, 13);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+            	 OrderHistory p = (OrderHistory) element;
+                 return p.getSlipage();
+            }
+        });
+        col.setEditingSupport(new EditingSupport(histroyTableViewer) {
+        	CellEditor editor = new TextCellEditor(histroyTableViewer.getTable());
+        	
+        	@Override
+    	    protected Object getValue(Object element) {
+        		if(element != null) {
+        			return ((OrderHistory) element).getSlipage();
+        		}
+        		return null;
+    	    }
+
+    	    @Override
+    	    protected void setValue(Object element, Object userInputValue) {
+    	    	((OrderHistory) element).setSlipage(String.valueOf(userInputValue));
+    	    	histroyTableViewer.update(element, null);
+    	    }
+			
+			@Override
+			protected CellEditor getCellEditor(Object element) {
+				return editor;
+			}
+			
+			@Override
+			protected boolean canEdit(Object element) {
+				return true;
+			}
+		});
+        
+        col =createTableViewerColumn("Gas Price", 100, 14);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+            	OrderHistory p = (OrderHistory) element;
+                return p.getGasPrice();
+            }
+        });
+        col.setEditingSupport(new EditingSupport(histroyTableViewer) {
+        	CellEditor editor = new TextCellEditor(histroyTableViewer.getTable());
+        	
+        	@Override
+    	    protected Object getValue(Object element) {
+        		if(element != null) {
+        			return ((OrderHistory) element).getGasPrice();
+        		}
+        		return null;
+    	    }
+
+    	    @Override
+    	    protected void setValue(Object element, Object userInputValue) {
+    	    	((OrderHistory) element).setGasPrice(String.valueOf(userInputValue));
+    	    	histroyTableViewer.update(element, null);
+    	    }
+			
+			@Override
+			protected CellEditor getCellEditor(Object element) {
+				return editor;
+			}
+			
+			@Override
+			protected boolean canEdit(Object element) {
+				return true;
+			}
+		});
+        col =createTableViewerColumn("Gas Limit", 100, 15);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+            	OrderHistory p = (OrderHistory) element;
+                return p.getGasLimit();
+            }
+            
+        });
+        col.setEditingSupport(new EditingSupport(histroyTableViewer) {
+        	CellEditor editor = new TextCellEditor(histroyTableViewer.getTable());
+        	
+        	@Override
+    	    protected Object getValue(Object element) {
+        		if(element != null) {
+        			return ((OrderHistory) element).getGasLimit();
+        		}
+        		return null;
+    	    }
+
+    	    @Override
+    	    protected void setValue(Object element, Object userInputValue) {
+    	    	((OrderHistory) element).setGasLimit(String.valueOf(userInputValue));
+    	    	histroyTableViewer.update(element, null);
+    	    }
+			
+			@Override
+			protected CellEditor getCellEditor(Object element) {
+				return editor;
+			}
+			
+			@Override
+			protected boolean canEdit(Object element) {
+				return true;
+			}
+		});
+        
+        col =createTableViewerColumn("Retrigger", 100, 16);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            //make sure you dispose these buttons when viewer input changes
+            Map<Object, Button> buttons = new HashMap<Object, Button>();
+            
+            @Override
+            public void update(ViewerCell cell) {
+
+                TableItem item = (TableItem) cell.getItem();
+                OrderHistory history = (OrderHistory)item.getData();
+					if(history.getOrderId() != null && !history.getOrderId().isEmpty()) {
+						Button button;
+						if (buttons.containsKey(cell.getElement())) {
+							button = buttons.get(cell.getElement());
+						} else {
+							button = new Button((Composite) cell.getViewerRow().getControl(), SWT.NONE);
+							button.setText("Retrigger");
+							button.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+							button.setBackground(greenColor);
+							buttons.put(cell.getElement(), button);
+						}
+						TableEditor editor = new TableEditor(item.getParent());
+						editor.grabHorizontal = true;
+						editor.grabVertical = true;
+						editor.setEditor(button, item, cell.getColumnIndex());
+						editor.layout();
+						button.addSelectionListener(new SelectionAdapter() {
+							@Override
+							public void widgetSelected(SelectionEvent e) {
+								RetriggerSnipeOrderClient retriggerSnipeOrderClient = new RetriggerSnipeOrderClient();
+								String response = retriggerSnipeOrderClient.retriggerSnipeOrder(history.getId(),
+										history.getSlipage(), history.getGasPrice(),
+										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
+								if (response != null && !response.isEmpty()) {
+									System.out.println("Click refresh");
+								}
+							}
+						});
+					}
+            }});
+        
+        
+        col =createTableViewerColumn("Updated Datetime", 100, 17);
         col.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return LocalDateTime.now().toString();
             }
         });
-
+        
 	}
 
 	 private TableViewerColumn createTableViewerColumn(String title, int bound, final int colNumber) {
@@ -810,7 +956,17 @@ public class AITrades {
 	        column.setText(title);
 	        column.setWidth(bound);
 	        column.setResizable(true);
+	        column.addSelectionListener(getSelectionAdapter(column, colNumber));
 	        return viewerColumn;
+	    }
+	 private SelectionAdapter getSelectionAdapter(final TableColumn column,
+	            final int index) {
+	        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+	            @Override
+	            public void widgetSelected(SelectionEvent e) {
+	            }
+	        };
+	        return selectionAdapter;
 	    }
 
 
@@ -929,11 +1085,11 @@ public class AITrades {
 	 * @param parent
 	 * @return
 	 */
-	private static int confirmServiceCall(Composite parent) {
+	private static int confirmServiceCall(Composite parent, String message) {
 		Shell shell = Display.getDefault().getActiveShell();
 		MessageBox dialog = new MessageBox(shell, SWT.ICON_QUESTION | SWT.OK | SWT.CANCEL);
 		dialog.setText("Trade");
-		dialog.setMessage("Please check DEX, From & To for Buy & Sell!!");
+		dialog.setMessage(message);
 		return dialog.open();
 	}
 	
