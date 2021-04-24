@@ -61,13 +61,6 @@ public class RetriggerSnipeOrderClient {
 		if(gasLimit != null && !gasLimit.isEmpty()) {
 			retriggerSnipeOrder.setGasLimit(new BigInteger(gasLimit));
 		}
-		ObjectMapper mapper = new ObjectMapper();
-		try {
-			System.out.println("Retrigger order"+ mapper.writeValueAsString(retriggerSnipeOrder));
-		} catch (JsonProcessingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		return retriggerSnipeOrder;
 	}
 

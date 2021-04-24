@@ -37,7 +37,6 @@ public class OrderHistroyRetrieverClient {
 		try {
 			HttpEntity<OrderHistoryRequest> httpEntity = new HttpEntity<OrderHistoryRequest>(prepareOrderHistoryRequest(ethWalletPublicKey, bscWalletPublicKey),createSecurityHeaders());
 			ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
-			System.out.println("ping good");
 			return responseEntity.getBody().getOrderHistories();
 		} catch (RestClientException e) {
 			e.printStackTrace();

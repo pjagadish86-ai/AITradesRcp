@@ -849,7 +849,6 @@ public class AITrades {
 
     	    @Override
     	    protected void setValue(Object element, Object userInputValue) {
-    	    	System.out.println("gas price"+userInputValue);
     	    	((OrderHistory) element).setGasPrice(String.valueOf(userInputValue));
     	    	histroyTableViewer.update(element, null);
     	    }
@@ -886,7 +885,6 @@ public class AITrades {
 
     	    @Override
     	    protected void setValue(Object element, Object userInputValue) {
-    	    	System.out.println("gas limit"+userInputValue);
     	    	((OrderHistory) element).setGasLimit(String.valueOf(userInputValue));
     	    	histroyTableViewer.update(element, null);
     	    }
@@ -928,6 +926,10 @@ public class AITrades {
 										history.getSlipage(), history.getGasPrice(),
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
+									int callService = confirm(orderHistoryParent, "Retrigger OrderId:- "+ response);
+									if(callService == 256) {	
+										return;
+									}
 									OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
 									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 									histroyTableViewer.refresh();
@@ -999,7 +1001,6 @@ public class AITrades {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity =  restTemplate.exchange(CREATE_ORDER, HttpMethod.POST, httpEntity, String.class);
 		Object respose =  responseEntity.getBody();
-		System.out.println("Order Id " + respose);
 	}
 	
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
@@ -1023,7 +1024,6 @@ public class AITrades {
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
 			clearValues();
-			System.out.println("Snipe Order Id:  " +respose);
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
 				
@@ -1090,6 +1090,15 @@ public class AITrades {
 		dialog.setMessage(message);
 		return dialog.open();
 	}
+	
+	private static int confirm(Composite parent, String message) {
+		Shell shell = Display.getDefault().getActiveShell();
+		MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+		dialog.setText("Trade");
+		dialog.setMessage(message);
+		return dialog.open();
+	}
+	
 	
 	private  SelectionAdapter getButtonSelectionAdapter1() {
 		 
