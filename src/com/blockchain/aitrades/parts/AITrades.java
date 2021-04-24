@@ -926,10 +926,6 @@ public class AITrades {
 										history.getSlipage(), history.getGasPrice(),
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
-									int callService = confirm(orderHistoryParent, "Retrigger OrderId:- "+ response);
-									if(callService == 256) {	
-										return;
-									}
 									OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
 									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 									histroyTableViewer.refresh();
