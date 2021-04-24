@@ -31,9 +31,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.domain.Order;
+import com.aitrades.blockchain.eth.gateway.domain.OrderType;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
-import com.blockchain.aitrades.domain.Order;
-import com.blockchain.aitrades.domain.OrderType;
+import com.aitrades.blockchain.eth.gateway.request.OrderRequestPreparer;
+import com.aitrades.blockchain.eth.gateway.request.SnipeRequestPreparer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AITradesV2 {

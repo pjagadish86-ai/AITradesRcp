@@ -7,8 +7,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 
@@ -24,8 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.KeyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -50,13 +47,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
+import com.aitrades.blockchain.eth.gateway.domain.Convert;
+import com.aitrades.blockchain.eth.gateway.domain.Order;
+import com.aitrades.blockchain.eth.gateway.domain.OrderHistory;
+import com.aitrades.blockchain.eth.gateway.domain.OrderType;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
-import com.blockchain.aitrades.domain.Order;
-import com.blockchain.aitrades.domain.OrderType;
+import com.aitrades.blockchain.eth.gateway.request.OrderRequestPreparer;
+import com.aitrades.blockchain.eth.gateway.request.SnipeRequestPreparer;
 
 public class AITrades {
 	
@@ -227,8 +228,9 @@ public class AITrades {
 	    refreshButton.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
-				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
+				List<OrderHistory> retrieveOrderHistroy = histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
+				histroyTableViewer.setInput(retrieveOrderHistroy);
 				histroyTableViewer.refresh();
 			}
 		});
@@ -847,6 +849,7 @@ public class AITrades {
 
     	    @Override
     	    protected void setValue(Object element, Object userInputValue) {
+    	    	System.out.println("gas price"+userInputValue);
     	    	((OrderHistory) element).setGasPrice(String.valueOf(userInputValue));
     	    	histroyTableViewer.update(element, null);
     	    }
@@ -883,6 +886,7 @@ public class AITrades {
 
     	    @Override
     	    protected void setValue(Object element, Object userInputValue) {
+    	    	System.out.println("gas limit"+userInputValue);
     	    	((OrderHistory) element).setGasLimit(String.valueOf(userInputValue));
     	    	histroyTableViewer.update(element, null);
     	    }
@@ -901,24 +905,16 @@ public class AITrades {
         col =createTableViewerColumn("Retrigger", 100, 16);
         col.setLabelProvider(new ColumnLabelProvider() {
             //make sure you dispose these buttons when viewer input changes
-            Map<Object, Button> buttons = new HashMap<Object, Button>();
-            
             @Override
             public void update(ViewerCell cell) {
 
                 TableItem item = (TableItem) cell.getItem();
                 OrderHistory history = (OrderHistory)item.getData();
 					if(history.getOrderId() != null && !history.getOrderId().isEmpty()) {
-						Button button;
-						if (buttons.containsKey(cell.getElement())) {
-							button = buttons.get(cell.getElement());
-						} else {
-							button = new Button((Composite) cell.getViewerRow().getControl(), SWT.NONE);
-							button.setText("Retrigger");
-							button.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-							button.setBackground(greenColor);
-							buttons.put(cell.getElement(), button);
-						}
+						Button button = new Button((Composite) cell.getViewerRow().getControl(), SWT.NONE);
+						button.setText("Retrigger");
+						button.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+						button.setBackground(greenColor);
 						TableEditor editor = new TableEditor(item.getParent());
 						editor.grabHorizontal = true;
 						editor.grabVertical = true;
@@ -928,11 +924,11 @@ public class AITrades {
 							@Override
 							public void widgetSelected(SelectionEvent e) {
 								RetriggerSnipeOrderClient retriggerSnipeOrderClient = new RetriggerSnipeOrderClient();
-								String response = retriggerSnipeOrderClient.retriggerSnipeOrder(history.getId(),
+								String response = retriggerSnipeOrderClient.retriggerSnipeOrder(history.getOrderId(),
 										history.getSlipage(), history.getGasPrice(),
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
-									OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
+									OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
 									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 									histroyTableViewer.refresh();
 								}
@@ -958,7 +954,7 @@ public class AITrades {
 	        column.setText(title);
 	        column.setWidth(bound);
 	        column.setResizable(true);
-	        column.addSelectionListener(getSelectionAdapter(column, colNumber));
+	      //  column.addSelectionListener(getSelectionAdapter(column, colNumber));
 	        return viewerColumn;
 	    }
 	 private SelectionAdapter getSelectionAdapter(final TableColumn column,

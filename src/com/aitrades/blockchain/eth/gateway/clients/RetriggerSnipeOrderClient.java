@@ -12,8 +12,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.RetriggerSnipeOrder;
-import com.blockchain.aitrades.parts.Convert;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RetriggerSnipeOrderClient {
 	
@@ -58,6 +60,13 @@ public class RetriggerSnipeOrderClient {
 		}
 		if(gasLimit != null && !gasLimit.isEmpty()) {
 			retriggerSnipeOrder.setGasLimit(new BigInteger(gasLimit));
+		}
+		ObjectMapper mapper = new ObjectMapper();
+		try {
+			System.out.println("Retrigger order"+ mapper.writeValueAsString(retriggerSnipeOrder));
+		} catch (JsonProcessingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return retriggerSnipeOrder;
 	}
