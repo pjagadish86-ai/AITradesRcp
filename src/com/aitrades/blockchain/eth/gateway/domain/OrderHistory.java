@@ -1,5 +1,8 @@
 package com.aitrades.blockchain.eth.gateway.domain;
 
+import com.aitrades.blockchain.eth.gateway.clients.ApproveTransactionClient;
+import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
+
 public class OrderHistory {
 
 	private String id;

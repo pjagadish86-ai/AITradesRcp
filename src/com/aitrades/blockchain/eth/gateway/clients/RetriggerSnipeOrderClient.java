@@ -14,8 +14,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.RetriggerSnipeOrder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class RetriggerSnipeOrderClient {
 	

@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -49,6 +50,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.clients.ApproveTransactionClient;
 import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
@@ -771,7 +773,8 @@ public class AITrades {
             @Override
             public String getText(Object element) {
                 OrderHistory p = (OrderHistory) element;
-                return p.getSwappedhashStatus() != null && !p.getSwappedhashStatus().isEmpty() ?  p.getSwappedhashStatus() : p.getSwappedhash();
+                String swapStatus = p.getSwappedhashStatus() != null && !p.getSwappedhashStatus().isEmpty() ?  p.getSwappedhashStatus() : p.getSwappedhash();
+				return swapStatus;
             }
         });
 
@@ -1222,4 +1225,5 @@ public class AITrades {
 		calendar.add(Calendar.HOUR_OF_DAY, hours);
 		return calendar.getTime();
 	}
+	
 }

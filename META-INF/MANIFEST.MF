@@ -31,4 +31,5 @@ Bundle-Classpath: .,
  lib/spring-core-5.3.3.jar,
  lib/spring-expression-5.3.3.jar,
  lib/spring-web-5.3.3.jar,
- lib/commons-logging-1.2.jar
+ lib/commons-logging-1.2.jar,
+ lib/commons-lang3-3.3.2.jar
