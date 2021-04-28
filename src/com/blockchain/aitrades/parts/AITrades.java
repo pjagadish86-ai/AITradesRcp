@@ -1004,7 +1004,6 @@ public class AITrades {
 			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
 									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
 			callOrderService(order);
-			clearValues();
 		}catch (HttpStatusCodeException  e1) {
 			String response = e1.getResponseBodyAsString();
 			ObjectMapper mapper = new ObjectMapper();
@@ -1012,6 +1011,9 @@ public class AITrades {
 			try {
 				restExceptionMessages = mapper.readValue(response, RestExceptionMessage.class);
 				erroMsg = restExceptionMessages.getErrorMessage();
+				if(erroMsg== null && erroMsg.isEmpty()) {
+					erroMsg = response;
+				}
 			} catch (Exception e) {
 				erroMsg = e.getMessage();
 			} 

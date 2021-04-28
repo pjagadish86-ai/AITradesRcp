@@ -19,16 +19,15 @@ import com.aitrades.blockchain.eth.gateway.domain.Ticker;
 import com.aitrades.blockchain.eth.gateway.domain.TickerEntity;
 import com.aitrades.blockchain.eth.gateway.domain.TrailingStopOrder;
 import com.aitrades.blockchain.eth.gateway.domain.WalletInfo;
-import com.aitrades.blockchain.eth.gateway.domain.Convert.Unit;
 
 public class OrderRequestPreparer {
 
 	private static final String PANCAKE = "PANCAKE";
 	private static final String WORKING = "WORKING";
 	private static final String CUSTOM = "CUSTOM";
-	private static final String BNB_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-
-	private static final String ETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
+	
+	private static final String WBNB_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
+	private static final String WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 
 	public Order createOrder(String contractToInteract, String defaultWalletAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei, String gasLimitGwei,
@@ -38,10 +37,10 @@ public class OrderRequestPreparer {
 		Order order = new Order();
 		
 		if(OrderSide.BUY.name().equalsIgnoreCase(side)) {
-			contractToInteract = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
+			contractToInteract = PANCAKE.equalsIgnoreCase(route) ? WBNB_ADDRESS : WETH_ADDRESS;
 		}
 		if(OrderSide.SELL.name().equalsIgnoreCase(side)) {
-			defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? BNB_ADDRESS : ETH_ADDRESS;
+			defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? WBNB_ADDRESS : WETH_ADDRESS;
 		}
 		
 		order.setFrom(createTickerEntity(route, amount, contractToInteract, side));
