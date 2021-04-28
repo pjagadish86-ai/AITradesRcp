@@ -1,6 +1,7 @@
 package com.blockchain.aitrades.parts;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -539,6 +540,7 @@ public class AITrades {
 		    	isExecition = btn.getSelection();
 		    	if(isExecition) {
 		    		time.setEnabled(true);
+		    		time = new DateTime(topComposite, SWT.TIME);;
 		    	}else {
 		    		time.setEnabled(false);
 		    	}
@@ -570,7 +572,7 @@ public class AITrades {
 		minLiquidityText.setEditable(false);
 		
 		Label expectedTokensLabel = new Label(topComposite, SWT.NONE);
-		expectedTokensLabel.setText("IDO Expected Token");
+		expectedTokensLabel.setText("Expected Output Tokens");
 		expectedTokensLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
 		expectedTokensText = new Text(topComposite, SWT.NONE);
@@ -1016,7 +1018,7 @@ public class AITrades {
 				snipeTransactionRequest.setLiquidityQuantity(Convert.toWei(minLiquidityText.getText(), Convert.Unit.GWEI).toBigInteger());
 			}
 			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
-				snipeTransactionRequest.setExpectedOutPutToken(Convert.toWei(expectedTokensText.getText(), Convert.Unit.GWEI).toBigInteger());
+				snipeTransactionRequest.setExpectedOutPutToken(new BigInteger(expectedTokensText.getText()));
 			}
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			restTemplate = new RestTemplate();
@@ -1052,6 +1054,7 @@ public class AITrades {
 		minLiquidityText.setText("");
 		expectedTokensText.setText("");
 		takeProfitOrderLimit.setText("");
+		isExecutionOrderCheckBox.setSelection(false);
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
