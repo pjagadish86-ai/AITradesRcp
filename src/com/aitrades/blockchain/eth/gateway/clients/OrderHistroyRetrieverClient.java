@@ -3,6 +3,10 @@ package com.aitrades.blockchain.eth.gateway.clients;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -39,13 +43,19 @@ public class OrderHistroyRetrieverClient {
 			ResponseEntity<OrderHistories> responseEntity =  restTemplate.exchange(ORDER_HISTORY, HttpMethod.POST, httpEntity, OrderHistories.class);
 			return responseEntity.getBody().getOrderHistories();
 		} catch (RestClientException e) {
-			e.printStackTrace();
+			openExceptionDialog("Order history", "Order history service down");
 		}finally {
 			restTemplate = null;
 		}
 		return Collections.emptyList();
 	}
-
+	private void openExceptionDialog(String dialogTitle, String errorMessage) {
+		Shell shell = Display.getDefault().getActiveShell();
+		MessageBox dialog = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+		dialog.setText(dialogTitle);
+		dialog.setMessage(errorMessage);
+		dialog.open();
+	}
 	private OrderHistoryRequest prepareOrderHistoryRequest(String ethWalletPublicKey, String bscWalletPublicKey) {
 		OrderHistoryRequest orderHistoryRequest = new OrderHistoryRequest();
 		orderHistoryRequest.setId(UUIDGenerator.nextHex(UUIDGenerator.TYPE1));

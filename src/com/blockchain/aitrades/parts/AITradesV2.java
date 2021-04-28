@@ -416,7 +416,7 @@ public class AITradesV2 {
 		
         time = new DateTime(topComposite, SWT.TIME);;
         time.setEnabled(false);
-		//time.setRegion(region);
+		//executionDateTime.setRegion(region);
 		isExecutionOrderCheckBox.addSelectionListener(new SelectionAdapter() {
 		    @Override
 		    public void widgetSelected(SelectionEvent event) {

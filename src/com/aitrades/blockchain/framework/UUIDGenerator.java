@@ -28,7 +28,7 @@ import java.util.UUID;
 
 
 /**
- * UUID value generator.  Type 1 generator is based on the time-based generator
+ * UUID value generator.  Type 1 generator is based on the executionDateTime-based generator
  * in the Apache Commons Id project:  http://jakarta.apache.org/commons/sandbox
  * /id/uuid.html  The type 4 generator uses the standard Java UUID generator.
  *
@@ -65,12 +65,12 @@ public class UUIDGenerator {
     private static final byte TS_TIME_HI_IDX = 0;
     private static final byte TS_TIME_HI_LEN = 2;
 
-    // offset to move from 1/1/1970, which is 0-time for Java, to gregorian
-    // 0-time 10/15/1582, and multiplier to go from 100nsec to msec units
+    // offset to move from 1/1/1970, which is 0-executionDateTime for Java, to gregorian
+    // 0-executionDateTime 10/15/1582, and multiplier to go from 100nsec to msec units
     private static final long GREG_OFFSET = 0xB1D069B5400L;
     private static final long MILLI_MULT = 10000L;
 
-    // type of UUID -- time based
+    // type of UUID -- executionDateTime based
     private final static byte TYPE_TIME_BASED = 0x10;
 
     // random number generator used to reduce conflicts with other JVMs, and
@@ -89,7 +89,7 @@ public class UUIDGenerator {
     // timestamp)
     private static long _currentMillis;
 
-    // last used millis time, and a semi-random sequence that gets reset
+    // last used millis executionDateTime, and a semi-random sequence that gets reset
     // when it overflows
     private static long _lastMillis = 0L;
     private static final int MAX_14BIT = 0x3FFF;
@@ -104,7 +104,7 @@ public class UUIDGenerator {
         if (type1Initialized == true) {
             return;
         }
-        // note that secure random is very slow the first time
+        // note that secure random is very slow the first executionDateTime
         // it is used; consider switching to a standard random
         RANDOM = new SecureRandom();
         _seq = (short) RANDOM.nextInt(MAX_14BIT);
@@ -149,11 +149,11 @@ public class UUIDGenerator {
         byte[] uuid = new byte[16];
         System.arraycopy(IP, 0, uuid, 10, IP.length);
 
-        // Set time info.  Have to do this processing within a synchronized
+        // Set executionDateTime info.  Have to do this processing within a synchronized
         // block because of the statics...
         long now = 0;
         synchronized (UUIDGenerator.class) {
-            // Get the time to use for this uuid.  This method has the side
+            // Get the executionDateTime to use for this uuid.  This method has the side
             // effect of modifying the clock sequence, as well.
             now = getTime();
 
@@ -164,19 +164,19 @@ public class UUIDGenerator {
 
         }
 
-        // have to break up time because bytes are spread through uuid
+        // have to break up executionDateTime because bytes are spread through uuid
         byte[] timeBytes = Bytes.toBytes(now);
 
-        // Copy time low
+        // Copy executionDateTime low
         System.arraycopy(timeBytes, TS_TIME_LO_IDX, uuid, IDX_TIME_LO,
                 TS_TIME_LO_LEN);
-        // Copy time mid
+        // Copy executionDateTime mid
         System.arraycopy(timeBytes, TS_TIME_MID_IDX, uuid, IDX_TIME_MID,
                 TS_TIME_MID_LEN);
-        // Copy time hi
+        // Copy executionDateTime hi
         System.arraycopy(timeBytes, TS_TIME_HI_IDX, uuid, IDX_TIME_HI,
                 TS_TIME_HI_LEN);
-        //Set version (time-based)
+        //Set version (executionDateTime-based)
         uuid[IDX_TYPE] |= TYPE_TIME_BASED; // 0001 0000
 
         return uuid;
@@ -275,10 +275,10 @@ public class UUIDGenerator {
             _counter = 0;
         }
 
-        // calculate time as current millis plus offset times 100 ns ticks
+        // calculate executionDateTime as current millis plus offset times 100 ns ticks
         long currentTime = (_currentMillis + GREG_OFFSET) * MILLI_MULT;
 
-        // return the uuid time plus the artificial tick counter incremented
+        // return the uuid executionDateTime plus the artificial tick counter incremented
         return currentTime + _counter++;
     }
 

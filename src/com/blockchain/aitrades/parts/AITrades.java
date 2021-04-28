@@ -12,7 +12,6 @@ import java.util.List;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -49,18 +48,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import com.aitrades.blockchain.eth.gateway.clients.ApproveTransactionClient;
 import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.Order;
 import com.aitrades.blockchain.eth.gateway.domain.OrderHistory;
 import com.aitrades.blockchain.eth.gateway.domain.OrderType;
+import com.aitrades.blockchain.eth.gateway.domain.RestExceptionMessage;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.eth.gateway.request.OrderRequestPreparer;
 import com.aitrades.blockchain.eth.gateway.request.SnipeRequestPreparer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AITrades {
 	
@@ -94,7 +95,7 @@ public class AITrades {
 	boolean isFeeEligibile = false;
 	
 	boolean isExecition = false;
-	DateTime time = null;
+	DateTime executionDateTime = null;
 	String executionTime = "";
 	Button isExecutionOrderCheckBox = null;
 	
@@ -548,24 +549,24 @@ public class AITrades {
 		timeLabel.setText("Time   ");
 		timeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-        time = new DateTime(topComposite, SWT.TIME);;
-        time.setEnabled(false);
-		//time.setRegion(region);
+        executionDateTime = new DateTime(topComposite, SWT.TIME);;
+        executionDateTime.setEnabled(false);
+		//executionDateTime.setRegion(region);
 		isExecutionOrderCheckBox.addSelectionListener(new SelectionAdapter() {
 		    @Override
 		    public void widgetSelected(SelectionEvent event) {
 		    	Button btn = (Button) event.getSource();
 		    	isExecition = btn.getSelection();
 		    	if(isExecition) {
-		    		time.setEnabled(true);
-		    		time = new DateTime(topComposite, SWT.TIME);;
+		    		executionDateTime.setEnabled(true);
+		    		executionDateTime = new DateTime(topComposite, SWT.TIME);;
 		    	}else {
-		    		time.setEnabled(false);
+		    		executionDateTime.setEnabled(false);
 		    	}
 		    }
 		});
 		
-		time.addSelectionListener(new SelectionAdapter() {
+		executionDateTime.addSelectionListener(new SelectionAdapter() {
 			 @Override
 			    public void widgetSelected(SelectionEvent event) {
 				  int hrs = ((DateTime)event.getSource()).getHours();
@@ -949,6 +950,9 @@ public class AITrades {
 										history.getSlipage(), history.getGasPrice(),
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
+									if(response != null) {
+										openSucessDialog("Retrigger Order", "Retrigger Order sucessfully created order id: "+ (String)response);
+									}
 									OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
 									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
 									histroyTableViewer.refresh();
@@ -994,16 +998,30 @@ public class AITrades {
 										String gasLimitGwei, String side,  
 										String orderType, String limitPrice, 
 										String stopPrice, String percentage, String route, boolean isFeeEligibile) {
+		String erroMsg = null;
 		try {
 			OrderRequestPreparer  orderRequestPreparer = new OrderRequestPreparer();
 			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
 									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
 			callOrderService(order);
 			clearValues();
+		}catch (HttpStatusCodeException  e1) {
+			String response = e1.getResponseBodyAsString();
+			ObjectMapper mapper = new ObjectMapper();
+			RestExceptionMessage restExceptionMessages = null;
+			try {
+				restExceptionMessages = mapper.readValue(response, RestExceptionMessage.class);
+				erroMsg = restExceptionMessages.getErrorMessage();
+			} catch (Exception e) {
+				erroMsg = e.getMessage();
+			} 
+			
 		} catch (Exception e) {
-			e.printStackTrace();
-			clearValues();
+			erroMsg = e.getMessage();
 		}finally {
+			if(erroMsg != null && !erroMsg.isEmpty()) {
+				openExceptionDialog("Order ", erroMsg);
+			}
 			clearValues();
 		}
 	}
@@ -1020,6 +1038,9 @@ public class AITrades {
 		RestTemplate restTemplate = new RestTemplate();
 		ResponseEntity<String> responseEntity =  restTemplate.exchange(CREATE_ORDER, HttpMethod.POST, httpEntity, String.class);
 		Object respose =  responseEntity.getBody();
+		if(respose != null) {
+			openSucessDialog("Order", "Order sucessfully created order id: "+ (String)respose);
+		}
 	}
 	
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
@@ -1027,6 +1048,7 @@ public class AITrades {
 									   String side, String limitPrice, String stopPrice, 
 									   String percentage, String route, boolean isFeeEligibile, String localDateTime) {
 		RestTemplate restTemplate = null;
+		String erroMsg = null;
 		try {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
@@ -1042,7 +1064,9 @@ public class AITrades {
 			restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
-			clearValues();
+			if(respose != null) {
+				openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
+			}
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
 				
@@ -1053,13 +1077,40 @@ public class AITrades {
 				callOrderService(order);
 			}
 			
+		}catch (HttpStatusCodeException  e1) {
+			ObjectMapper mapper = new ObjectMapper();
+			RestExceptionMessage restExceptionMessages = null;
+			try {
+				restExceptionMessages = mapper.readValue(e1.getResponseBodyAsString(), RestExceptionMessage.class);
+				erroMsg = restExceptionMessages.getErrorMessage();
+			} catch (Exception e) {
+				erroMsg = e.getMessage();
+			} 
 		} catch (Exception e) {
-			e.printStackTrace();
-			clearValues();
+			erroMsg = e.getMessage();
 		}finally {
+			if(erroMsg != null && !erroMsg.isEmpty()) {
+				openExceptionDialog("Snipe Order ", erroMsg);
+			}
 			restTemplate = null;
 			clearValues();
 		}
+	}
+
+	private void openSucessDialog(String dialogTitle, String sucessmsg) {
+		Shell shell = Display.getDefault().getActiveShell();
+		MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+		dialog.setText(dialogTitle);
+		dialog.setMessage(sucessmsg);
+		dialog.open();
+	}
+	
+	private void openExceptionDialog(String dialogTitle, String errorMessage) {
+		Shell shell = Display.getDefault().getActiveShell();
+		MessageBox dialog = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
+		dialog.setText(dialogTitle);
+		dialog.setMessage(errorMessage);
+		dialog.open();
 	}
 	
 
@@ -1199,7 +1250,7 @@ public class AITrades {
 					sellButton.setBackground(greyColor);
 					buyButton.setBackground(greyColor);
 					isExecutionOrderCheckBox.setEnabled(false);
-					time.setEnabled(false);
+					executionDateTime.setEnabled(false);
 					gasModeComboitems.setEnabled(true);
 					takeProfitOrderLimit.setEnabled(false);
 					takeProfitOrderLimit.setEditable(false);
