@@ -136,9 +136,6 @@ public class AITrades {
 	private String ethWalletPublicKey = "0x7B74B57c89A73145Fe1915f45d8c23682fF78341";
 	private String bscWalletPublicKey = "0xF007afdB97c3744762F953C07CD45Dd237663C3F";
 	
-	private Text retriggerSlipage = null;
-	private Text retriggerGasPrice = null;
-	private Text retriggerGasLimit = null;
 	
 	@PostConstruct
 	public void createComposite(Composite parent1) {
@@ -355,12 +352,44 @@ public class AITrades {
 		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
 		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
 		
+		routeComboitems.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dexRoute = ((Combo)e.getSource()).getText().toString();
+				gasModeComboitems.setEnabled(true);
+				gasLimitText.setEnabled(true);
+				gasGweiText.setEnabled(true);
+				gasGweiText.setEditable(true);
+				gasLimitText.setEditable(true);
+				if(dexRoute.equalsIgnoreCase("PANCAKE")) {
+					gasModeComboitems.select(5);
+					gasLimitText.setText("356256");
+					gasGweiText.setText("9");
+					if(!gasLimitLabel.isEnabled()) {
+						System.out.println("not enabled");
+					}
+					
+					gasLimitText.setEnabled(true);
+					gasGweiText.setEnabled(true);
+					gasGweiText.setEditable(true);
+					gasLimitText.setEditable(true);
+					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+				}
+			}
+		});
+		
+		
 		gasModeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (((Combo)e.getSource()).getText().equalsIgnoreCase(CUSTOM)){
 					gasGweiText.setEnabled(true);
+					gasGweiText.setEditable(true);
+					
+					gasLimitText.setEnabled(true);
 					gasLimitText.setEditable(true);
+					
 					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 				}else {
@@ -374,17 +403,6 @@ public class AITrades {
 		});
 		
 		
-		routeComboitems.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				dexRoute = ((Combo)e.getSource()).getText().toString();
-				gasModeComboitems.setEnabled(true);
-				gasLimitText.setEditable(true);
-				gasGweiText.setEnabled(true);
-				gasGweiText.setEditable(true);
-				gasLimitText.setEditable(true);
-			}
-		});
 		
 		Label orderTypeLabel = new Label(topComposite, SWT.NONE);
 		orderTypeLabel.setText("ORDER TYPE       ");

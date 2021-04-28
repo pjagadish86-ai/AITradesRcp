@@ -35,6 +35,7 @@ public class SnipeRequestPreparer {
 		snipeTransactionRequest.setToAddress(contractToInteract);
 		snipeTransactionRequest.setInputTokenValueAmountAsBigDecimal(new BigDecimal(amount));
 		snipeTransactionRequest.setInputTokenValueAmountAsBigInteger(Convert.toWei(amount, Convert.Unit.ETHER).toBigInteger());
+		slipage = slipage != null && !slipage.isEmpty() ? slipage : "1";
 		BigDecimal slipageInBips = (new BigDecimal(slipage).multiply(new BigDecimal(100))).divide(new BigDecimal(10000));
 		snipeTransactionRequest.setSlipage(slipageInBips);
 		snipeTransactionRequest.setSlipageInDouble(slipageInBips.doubleValue());
