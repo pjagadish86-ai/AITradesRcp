@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -51,8 +52,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
+import com.aitrades.blockchain.eth.gateway.clients.BlockchainExchangesClient;
 import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
+import com.aitrades.blockchain.eth.gateway.domain.BlockchainExchange;
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.Order;
 import com.aitrades.blockchain.eth.gateway.domain.OrderHistory;
@@ -77,7 +80,7 @@ public class AITrades {
 	private Button buyButton = null;
 	private Button sellButton = null;
 	private String buyOrSell=null;
-	
+	String[] routeItems = null;
 	private String orderTypeSelected = null;
 	private String dexRoute = "UNISWAP";
 	Combo gasModeComboitems = null;
@@ -283,8 +286,14 @@ public class AITrades {
 		routeLabel.setText("DEX                 ");
 		routeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		Combo routeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
-		String[] routetems = new String[] { "UNISWAP", "SUSHI", "PANCAKE"};
-		routeComboitems.setItems(routetems);
+		if(routeItems == null || routeItems.length == 0) {
+			BlockchainExchangesClient blockchainExchangesClient = new BlockchainExchangesClient();
+			List<BlockchainExchange> blockchainExchanges = blockchainExchangesClient.fetchBlockchainExchanges();
+			  List<String> response = blockchainExchanges.stream().map(BlockchainExchange :: getExchangeName).collect(Collectors.toList());
+			  routeItems = response.toArray(new String[response.size()]);
+		}
+		
+		routeComboitems.setItems(routeItems);
 		routeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
 		routeComboitems.select(0);
 		routeComboitems.pack();
