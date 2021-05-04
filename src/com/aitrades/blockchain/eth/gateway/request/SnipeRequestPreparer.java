@@ -66,13 +66,12 @@ public class SnipeRequestPreparer {
 	
 	private WalletInfo createWalletInfo(String route) {
 		WalletInfo walletInfo = new WalletInfo();
-		if(PANCAKE2.equalsIgnoreCase(route)) {
-			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
-			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");
-			
-		}else {
+		if("UNISWAP".equalsIgnoreCase(route)){
 			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
 			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
+		}else {
+			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
+			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
 		}
 		return walletInfo;
 	}

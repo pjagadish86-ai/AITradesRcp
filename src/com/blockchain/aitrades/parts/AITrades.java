@@ -372,9 +372,10 @@ public class AITrades {
 				gasGweiText.setEditable(true);
 				gasLimitText.setEditable(true);
 				if(dexRoute.equalsIgnoreCase("PANCAKE")) {
-					gasModeComboitems.select(5);
-					gasLimitText.setText("356256");
-					gasGweiText.setText("9");
+					gasModeComboitems.select(3);
+					gasGweiText.setText("120");
+					gasLimitText.setText("450500");
+
 					if(!gasLimitLabel.isEnabled()) {
 						System.out.println("not enabled");
 					}
