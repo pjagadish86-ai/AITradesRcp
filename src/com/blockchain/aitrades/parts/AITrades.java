@@ -372,9 +372,9 @@ public class AITrades {
 				gasGweiText.setEditable(true);
 				gasLimitText.setEditable(true);
 				if(dexRoute.equalsIgnoreCase("PANCAKE")) {
-					gasModeComboitems.select(3);
-					gasGweiText.setText("120");
-					gasLimitText.setText("450500");
+					gasModeComboitems.select(5);
+					gasGweiText.setText("10");
+					gasLimitText.setText("350350");
 
 					if(!gasLimitLabel.isEnabled()) {
 						System.out.println("not enabled");
@@ -961,7 +961,7 @@ public class AITrades {
 										history.getGasLimit());// (String id, String slipage, String gasPrice, String gasLimit)
 								if (response != null && !response.isEmpty()) {
 									if(response != null) {
-										openSucessDialog("Retrigger Order", "Retrigger Order sucessfully created order id: "+ (String)response);
+										//openSucessDialog("Retrigger Order", "Retrigger Order sucessfully created order id: "+ (String)response);
 									}
 									OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
 									histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
