@@ -295,7 +295,7 @@ public class AITrades {
 		
 		routeComboitems.setItems(routeItems);
 		routeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
-		routeComboitems.select(0);
+		routeComboitems.select(2);
 		routeComboitems.pack();
 		
 		
@@ -338,10 +338,10 @@ public class AITrades {
 		gasModeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
 		gasModeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
-		String[] gasModetems = new String[] { "ULTRA", "FASTEST", "FAST", "STANDARD", "SAFELOW", CUSTOM};
+		String[] gasModetems = new String[] {CUSTOM};// new String[] { "ULTRA", "FASTEST", "FAST", "STANDARD", "SAFELOW", CUSTOM};
 		gasModeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
 		gasModeComboitems.setItems(gasModetems);
-		gasModeComboitems.select(1);
+		gasModeComboitems.select(0);
 		gasModeComboitems.pack();
 		
 		
@@ -357,10 +357,12 @@ public class AITrades {
 		gasLimitText.setLayoutData(new GridData(100, 20));
 		gasLimitLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		gasGweiText.setEnabled(false);
-		gasLimitText.setEditable(false);
-		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
-		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
+		gasGweiText.setEnabled(true);
+		gasGweiText.setEditable(true);
+		gasLimitText.setEditable(true);
+		gasLimitText.setEnabled(true);
+		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		
 		routeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -403,12 +405,13 @@ public class AITrades {
 					
 					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-				}else {
-					gasGweiText.setEnabled(false);
-					gasLimitText.setEditable(false);
-					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
-					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
-				}
+					}
+//				}else {
+//					//gasGweiText.setEnabled(false);
+//					//gasLimitText.setEditable(false);
+//					//gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
+//					//gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
+//				}
 			}
 
 		});
@@ -937,9 +940,13 @@ public class AITrades {
         col =createTableViewerColumn("Retrigger", 100, 16);
         col.setLabelProvider(new ColumnLabelProvider() {
             //make sure you dispose these buttons when viewer input changes
+        	private void sysout() {
+			System.out.println("hhell");
+
+			}
             @Override
             public void update(ViewerCell cell) {
-
+            	System.out.println("hhell");
                 TableItem item = (TableItem) cell.getItem();
                 OrderHistory history = (OrderHistory)item.getData();
 					if(history.getOrderId() != null && !history.getOrderId().isEmpty()) {
@@ -970,6 +977,11 @@ public class AITrades {
 							}
 						});
 					}
+					else {
+					 dispose();
+					}
+					
+					
             }});
         
         
@@ -1110,8 +1122,9 @@ public class AITrades {
 	}
 
 	private void openSucessDialog(String dialogTitle, String sucessmsg) {
-		Shell shell = Display.getDefault().getActiveShell();
-		MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.OK);
+		Display display = Display.getDefault();
+		Shell shell = display.getActiveShell();
+		MessageBox dialog = new MessageBox(shell, SWT.ICON_INFORMATION | SWT.Close);
 		dialog.setText(dialogTitle);
 		dialog.setMessage(sucessmsg);
 		dialog.open();
