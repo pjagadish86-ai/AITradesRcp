@@ -364,6 +364,10 @@ public class AITrades {
 		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		
+		
+		gasGweiText.setText("120");
+		gasLimitText.setText("350350");
+		
 		routeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -375,9 +379,6 @@ public class AITrades {
 				gasLimitText.setEditable(true);
 				if(dexRoute.equalsIgnoreCase("PANCAKE")) {
 					gasModeComboitems.select(5);
-					gasGweiText.setText("120");
-					gasLimitText.setText("350350");
-
 					if(!gasLimitLabel.isEnabled()) {
 						System.out.println("not enabled");
 					}
@@ -389,7 +390,12 @@ public class AITrades {
 					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 				}
+				
+				gasGweiText.setText("120");
+				gasLimitText.setText("350350");
 			}
+			
+
 		});
 		
 		
@@ -940,10 +946,6 @@ public class AITrades {
         col =createTableViewerColumn("Retrigger", 100, 16);
         col.setLabelProvider(new ColumnLabelProvider() {
             //make sure you dispose these buttons when viewer input changes
-        	private void sysout() {
-			System.out.println("hhell");
-
-			}
             @Override
             public void update(ViewerCell cell) {
             	System.out.println("hhell");
@@ -1149,6 +1151,10 @@ public class AITrades {
 		expectedTokensText.setText("");
 		takeProfitOrderLimit.setText("");
 		isExecutionOrderCheckBox.setSelection(false);
+		gasGweiText.setText("120");
+		gasLimitText.setText("350350");
+		slipagelabelText.setText("1");
+		expectedTokensText.setText("1");
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
@@ -1259,6 +1265,8 @@ public class AITrades {
 					minLiquidityText.setEnabled(true);
 					expectedTokensText.setEditable(true);
 					expectedTokensText.setEnabled(true);
+					expectedTokensText.setText("1");
+					slipagelabelText.setText("1");
 					
 				} else {
 					tradeButton.setBackground(lightGreenColor);
