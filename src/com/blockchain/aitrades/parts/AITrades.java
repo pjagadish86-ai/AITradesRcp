@@ -238,16 +238,16 @@ public class AITrades {
 				histroyTableViewer.refresh();
 			}
 		});
-//	    
-//	    display.timerExec(60000, new Runnable() {
-//			@Override
-//			public void run() {
-//				OrderHistroyRetriever  histroyRetriever = new OrderHistroyRetriever();
-//				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
-//				histroyTableViewer.refresh();
-//				display.timerExec( 1000, this );
-//			}
-//		});
+	    
+	    display.timerExec(500, new Runnable() {
+			@Override
+			public void run() {
+				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
+				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+				histroyTableViewer.refresh();
+				display.timerExec(500, this );
+			}
+		});
 		Composite orderHistoryParent1 = new Composite(parent1, SWT.FILL);
 		orderHistoryParent1.setLayout(new GridLayout(1, true));
 		orderHistoryParent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
@@ -659,11 +659,11 @@ public class AITrades {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				
-				int callService = confirmServiceCall(parent, "Please check DEX, From & To for Buy & Sell!!");
-				
-				if(callService == 256) {	
-					return;
-				}
+//				int callService = confirmServiceCall(parent, "Please check DEX, From & To for Buy & Sell!!");
+//				
+//				if(callService == 256) {	
+//					return;
+//				}
 				placeOrderButton.addKeyListener(new KeyListener() {
 					
 					@Override
@@ -816,6 +816,7 @@ public class AITrades {
                 String swapStatus = p.getSwappedhashStatus() != null && !p.getSwappedhashStatus().isEmpty() ?  p.getSwappedhashStatus() : p.getSwappedhash();
 				return swapStatus;
             }
+            
         });
 
         col =createTableViewerColumn("Order Side", 100, 11);
@@ -948,7 +949,6 @@ public class AITrades {
             //make sure you dispose these buttons when viewer input changes
             @Override
             public void update(ViewerCell cell) {
-            	System.out.println("hhell");
                 TableItem item = (TableItem) cell.getItem();
                 OrderHistory history = (OrderHistory)item.getData();
 					if(history.getOrderId() != null && !history.getOrderId().isEmpty()) {
@@ -1091,7 +1091,11 @@ public class AITrades {
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
 			if(respose != null) {
-				openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
+				//openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
+				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
+				List<OrderHistory> retrieveOrderHistroy = histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
+				histroyTableViewer.setInput(retrieveOrderHistroy);
+				histroyTableViewer.refresh();
 			}
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
