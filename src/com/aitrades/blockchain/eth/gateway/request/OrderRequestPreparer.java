@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 
+import org.eclipse.swt.widgets.Combo;
+
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.Gas;
 import com.aitrades.blockchain.eth.gateway.domain.LimitOrder;
@@ -32,7 +34,7 @@ public class OrderRequestPreparer {
 	public Order createOrder(String contractToInteract, String defaultWalletAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei, String gasLimitGwei,
 							 String side, String orderType, String limitPrice, String stopPrice, 
-							 String percentage, String route, boolean isFeeEligibile) {
+							 String percentage, String route, boolean isFeeEligibile, Combo blockChainComboitems) {
 		
 		Order order = new Order();
 		

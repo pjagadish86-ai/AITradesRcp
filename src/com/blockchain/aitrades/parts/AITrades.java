@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -80,9 +81,8 @@ public class AITrades {
 	private Button buyButton = null;
 	private Button sellButton = null;
 	private String buyOrSell=null;
-	String[] routeItems = null;
 	private String orderTypeSelected = null;
-	private String dexRoute = "UNISWAP";
+
 	Combo gasModeComboitems = null;
 	Text slipagelabelText = null;
 	//snipe order : 
@@ -94,7 +94,7 @@ public class AITrades {
 	Text takeProfitOrderLimit = null;
 	Button placeOrderButton = null;
 	Combo orderTypeLabelComboitems = null;
-	
+	List<BlockchainExchange> blockchainExchanges = null;
 	boolean isFeeEligibile = false;
 	
 	boolean isExecition = false;
@@ -239,15 +239,15 @@ public class AITrades {
 			}
 		});
 	    
-	    display.timerExec(500, new Runnable() {
-			@Override
-			public void run() {
-				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
-				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
-				histroyTableViewer.refresh();
-				display.timerExec(500, this );
-			}
-		});
+//	    display.timerExec(500, new Runnable() {
+//			@Override
+//			public void run() {
+//				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
+//				histroyTableViewer.setInput(histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey));
+//				histroyTableViewer.refresh();
+//				display.timerExec(500, this );
+//			}
+//		});
 		Composite orderHistoryParent1 = new Composite(parent1, SWT.FILL);
 		orderHistoryParent1.setLayout(new GridLayout(1, true));
 		orderHistoryParent1.setBackground(device.getSystemColor(SWT.COLOR_BLACK));
@@ -281,23 +281,39 @@ public class AITrades {
 		snipeButton.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		snipeButton.setBackground(black);
 		snipeButton.addSelectionListener(getButtonSelectionAdapter());
+		getBlockchainAndExchangeInfo();
+
+		Label blockchainLabel = new Label(topComposite, SWT.NONE);
+		blockchainLabel.setText("Blockchain");
+		blockchainLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		getBlockchainAndExchangeInfo();
+		Set<String> blockchains = blockchainExchanges.stream().map(BlockchainExchange :: getBlockchainName).collect(Collectors.toSet());
 		
-		Label routeLabel = new Label(topComposite, SWT.NONE);
-		routeLabel.setText("DEX                 ");
-		routeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		Combo routeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
-		if(routeItems == null || routeItems.length == 0) {
-			BlockchainExchangesClient blockchainExchangesClient = new BlockchainExchangesClient();
-			List<BlockchainExchange> blockchainExchanges = blockchainExchangesClient.fetchBlockchainExchanges();
-			  List<String> response = blockchainExchanges.stream().map(BlockchainExchange :: getExchangeName).collect(Collectors.toList());
-			  routeItems = response.toArray(new String[response.size()]);
-		}
+		Combo blockChainComboitems = new Combo(topComposite, SWT.DROP_DOWN);
+		blockChainComboitems.setItems(blockchains.toArray(new String[blockchains.size()]));
+		blockChainComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
+		blockChainComboitems.pack();
 		
-		routeComboitems.setItems(routeItems);
-		routeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
-		routeComboitems.select(2);
-		routeComboitems.pack();
-		
+		Label exchangeLabel = new Label(topComposite, SWT.NONE);
+		exchangeLabel.setText("Exchange");
+		exchangeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		Combo exchangeComboitems = new Combo(topComposite, SWT.DROP_DOWN);
+		exchangeComboitems.setEnabled(false);
+		exchangeComboitems.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
+		exchangeComboitems.setForeground(device.getSystemColor(SWT.COLOR_BLACK));
+		exchangeComboitems.pack();
+
+		blockChainComboitems.addSelectionListener(new SelectionAdapter() {
+			   @Override
+			    public void widgetSelected(SelectionEvent event) {
+				   exchangeComboitems.setEnabled(true);
+				   exchangeComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+				   String blockChain = ((Combo)event.getSource()).getText();
+				   getBlockchainAndExchangeInfo();
+				   Set<String> exchangesItems = blockchainExchanges.stream().filter(be -> be.getBlockchainName().equalsIgnoreCase(blockChain)).map(BlockchainExchange :: getExchangeName).collect(Collectors.toSet());
+				   exchangeComboitems.setItems(exchangesItems.toArray(new String[exchangesItems.size()]));
+			    }
+		});
 		
 		Label inputAmountLabel = new Label(topComposite, SWT.NONE);
 		inputAmountLabel.setText("INPUT AMOUNT   ");
@@ -364,40 +380,8 @@ public class AITrades {
 		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		
-		gasGweiText.setText("120");
-		gasLimitText.setText("350350");
-		
-		routeComboitems.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				dexRoute = ((Combo)e.getSource()).getText().toString();
-				gasModeComboitems.setEnabled(true);
-				gasLimitText.setEnabled(true);
-				gasGweiText.setEnabled(true);
-				gasGweiText.setEditable(true);
-				gasLimitText.setEditable(true);
-				if(dexRoute.equalsIgnoreCase("PANCAKE")) {
-					gasModeComboitems.select(5);
-					if(!gasLimitLabel.isEnabled()) {
-						System.out.println("not enabled");
-					}
-					
-					gasLimitText.setEnabled(true);
-					gasGweiText.setEnabled(true);
-					gasGweiText.setEditable(true);
-					gasLimitText.setEditable(true);
-					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-				}
-				
-				gasGweiText.setText("120");
-				gasLimitText.setText("350350");
-			}
-			
-
-		});
-		
+		gasGweiText.setText("");
+		gasLimitText.setText("");
 		
 		gasModeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -412,17 +396,8 @@ public class AITrades {
 					gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					}
-//				}else {
-//					//gasGweiText.setEnabled(false);
-//					//gasLimitText.setEditable(false);
-//					//gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
-//					//gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_DARK_GRAY));
-//				}
 			}
-
 		});
-		
-		
 		
 		Label orderTypeLabel = new Label(topComposite, SWT.NONE);
 		orderTypeLabel.setText("ORDER TYPE       ");
@@ -680,6 +655,17 @@ public class AITrades {
 				String limitPrice =  limitPriceText.getText();// 
 				String stopPrice = stopPriceText.getText();//
 				String percentage = percentText.getText();// trailpercent
+				
+				String dexRoute = null;
+				getBlockchainAndExchangeInfo();
+				for(BlockchainExchange blockchainExchange : blockchainExchanges) {
+					if(blockChainComboitems.getText().equalsIgnoreCase(blockchainExchange.getBlockchainName())) {
+						if(exchangeComboitems.getText().equalsIgnoreCase(blockchainExchange.getExchangeName())) {
+							dexRoute = blockchainExchange.getCode().toString();
+						}
+					}
+				}
+				
 				if(tradeOrSnipe.equalsIgnoreCase("Trade")) {
 					callCreateOrderService(contractInteraction.getText().trim(), 
 							"", 
@@ -694,7 +680,8 @@ public class AITrades {
 						    stopPrice,
 						    percentage, 
 						    dexRoute,
-						    isFeeEligibile
+						    isFeeEligibile,
+						      blockChainComboitems
 						    );
 				}else {
 					callSnipeOrderService(contractInteraction.getText().trim(), 
@@ -709,13 +696,22 @@ public class AITrades {
 									      limitPrice,
 									      stopPrice,
 									      percentage, 
-									      routeComboitems.getText(), 
+									      dexRoute, 
 									      isFeeEligibile, 
-									      localDateTime);
+									      localDateTime,
+									      blockChainComboitems
+									      );
 				}
 			}
 		});
 		parent1.pack();
+	}
+
+	private void getBlockchainAndExchangeInfo() {
+		if(blockchainExchanges == null || blockchainExchanges.isEmpty()) {
+			BlockchainExchangesClient blockchainExchangesClient = new BlockchainExchangesClient();
+			blockchainExchanges = blockchainExchangesClient.fetchBlockchainExchanges();
+		}
 	}
 	
 	private void createColumns(Composite orderHistoryParent, TableViewer histroyTableViewer) {
@@ -1021,12 +1017,12 @@ public class AITrades {
 										String slipage, String gasMode, String gasGwei, 
 										String gasLimitGwei, String side,  
 										String orderType, String limitPrice, 
-										String stopPrice, String percentage, String route, boolean isFeeEligibile) {
+										String stopPrice, String percentage, String route, boolean isFeeEligibile, Combo blockChainComboitems) {
 		String erroMsg = null;
 		try {
 			OrderRequestPreparer  orderRequestPreparer = new OrderRequestPreparer();
 			Order order = prepareOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, side, orderType,
-									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer);
+									   limitPrice, stopPrice, percentage, route, isFeeEligibile, orderRequestPreparer, blockChainComboitems);
 			callOrderService(order);
 		}catch (HttpStatusCodeException  e1) {
 			String response = e1.getResponseBodyAsString();
@@ -1054,9 +1050,9 @@ public class AITrades {
 
 	private Order prepareOrder(String fromAddress, String toAddress, String amount, String slipage, String gasMode,
 			String gasGwei, String gasLimitGwei, String side, String orderType, String limitPrice, String stopPrice,
-			String percentage, String route, boolean isFeeEligibile, OrderRequestPreparer orderRequestPreparer) {
+			String percentage, String route, boolean isFeeEligibile, OrderRequestPreparer orderRequestPreparer, Combo blockChainComboitems) {
 		return orderRequestPreparer.createOrder(fromAddress, toAddress, amount, slipage, gasMode, gasGwei, gasLimitGwei, 
-				side, orderType, limitPrice, stopPrice, percentage, route, isFeeEligibile);
+				side, orderType, limitPrice, stopPrice, percentage, route, isFeeEligibile, blockChainComboitems);
 	}
 
 	private void callOrderService(Order order) {
@@ -1072,13 +1068,13 @@ public class AITrades {
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
 									   String gasMode, String gasGwei, String gasLimitGwei, String orderType,  
 									   String side, String limitPrice, String stopPrice, 
-									   String percentage, String route, boolean isFeeEligibile, String localDateTime) {
+									   String percentage, String route, boolean isFeeEligibile, String localDateTime, Combo blockChainComboitems) {
 		RestTemplate restTemplate = null;
 		String erroMsg = null;
 		try {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
-					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime);
+					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime, blockChainComboitems);
 			snipeTransactionRequest.setExeTimeCheck(isExecition);
 			if(minLiquidityText != null && minLiquidityText.getText() != null && !minLiquidityText.getText().isEmpty()) {
 				snipeTransactionRequest.setLiquidityQuantity(Convert.toWei(minLiquidityText.getText(), Convert.Unit.GWEI).toBigInteger());
@@ -1091,17 +1087,17 @@ public class AITrades {
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
 			if(respose != null) {
-				//openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
-				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
-				List<OrderHistory> retrieveOrderHistroy = histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
-				histroyTableViewer.setInput(retrieveOrderHistroy);
-				histroyTableViewer.refresh();
+				openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
+//				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
+//				List<OrderHistory> retrieveOrderHistroy = histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
+//				histroyTableViewer.setInput(retrieveOrderHistroy);
+//				histroyTableViewer.refresh();
 			}
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
 				
 				Order order = prepareOrder(snipeTransactionRequest.getToAddress(), toAddress, amount, "5", gasMode, gasGwei, gasLimitGwei, "SELL", "MARKET",
-						   				   limitPrice, stopPrice, percentage, route, isFeeEligibile, new OrderRequestPreparer());
+						   				   limitPrice, stopPrice, percentage, route, isFeeEligibile, new OrderRequestPreparer(), blockChainComboitems);
 				order.setParentSnipeId(snipeOrderId);
 				order.setAutoSnipeLimitSellTrailPercent(takeProfitOrderLimit.getText());
 				callOrderService(order);
@@ -1155,10 +1151,11 @@ public class AITrades {
 		expectedTokensText.setText("");
 		takeProfitOrderLimit.setText("");
 		isExecutionOrderCheckBox.setSelection(false);
-		gasGweiText.setText("120");
-		gasLimitText.setText("350350");
-		slipagelabelText.setText("1");
-		expectedTokensText.setText("1");
+		gasGweiText.setText("");
+		gasLimitText.setText("");
+		slipagelabelText.setText("");
+		expectedTokensText.setText("");
+		blockchainExchanges = null;
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
@@ -1269,9 +1266,6 @@ public class AITrades {
 					minLiquidityText.setEnabled(true);
 					expectedTokensText.setEditable(true);
 					expectedTokensText.setEnabled(true);
-					expectedTokensText.setText("1");
-					slipagelabelText.setText("1");
-					
 				} else {
 					tradeButton.setBackground(lightGreenColor);
 					snipeButton.setBackground(black);

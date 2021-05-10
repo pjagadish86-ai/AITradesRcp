@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 
+import org.eclipse.swt.widgets.Combo;
+
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.SnipeTransactionRequest;
 import com.aitrades.blockchain.eth.gateway.domain.WalletInfo;
@@ -17,7 +19,6 @@ public class SnipeRequestPreparer {
 	private static final String WORKING = "WORKING";
 	private static final String CUSTOM = "CUSTOM";
 
-
 	private static final String PANCAKE = PANCAKE2;
 	private static final String WBNB_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
 
@@ -26,7 +27,7 @@ public class SnipeRequestPreparer {
 	public SnipeTransactionRequest createSnipeTransactionRequest(String contractToInteract, String defaultWalletAddress, String amount, 
 																 String slipage, String gasMode, String gasGwei,String gasLimitGwei,
 																 String side, String orderType, String limitPrice, String stopPrice, 
-																 String percentage, String route, boolean isFeeEligibile, String localDateTime) {
+																 String percentage, String route, boolean isFeeEligibile, String localDateTime, Combo blockChainComboitems) {
 		
 		SnipeTransactionRequest snipeTransactionRequest = new SnipeTransactionRequest();
 		defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? WBNB_ADDRESS : WETH_ADDRESS;
@@ -58,20 +59,24 @@ public class SnipeRequestPreparer {
 		snipeTransactionRequest.setPreApproved(false);
 		snipeTransactionRequest.setCreatedDateTime(LocalDateTime.now().toString());
 		snipeTransactionRequest.setUpdatedDateTime(LocalDateTime.now().toString());
-		snipeTransactionRequest.setWalletInfo(createWalletInfo(route));
+		snipeTransactionRequest.setWalletInfo(createWalletInfo(blockChainComboitems));
 		snipeTransactionRequest.setFeeEligible(isFeeEligibile);
 		snipeTransactionRequest.setExecutionTime(localDateTime);
 		return snipeTransactionRequest;
 	}
 	
-	private WalletInfo createWalletInfo(String route) {
+	private WalletInfo createWalletInfo(Combo blockChainComboitems) {
 		WalletInfo walletInfo = new WalletInfo();
-		if("UNISWAP".equalsIgnoreCase(route)){
+
+		if("ETH".equalsIgnoreCase(blockChainComboitems.getText())){
 			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
 			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
-		}else {
+		}else if("BSC".equalsIgnoreCase(blockChainComboitems.getText())){
 			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
 			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
+		}else if("FTM".equalsIgnoreCase(blockChainComboitems.getText())){
+			walletInfo.setPrivateKey("179d5ad28dc5c446d4bf7d8ea9f3f0ebcbe31d00941ebdd8440662e6a0061b94");
+			walletInfo.setPublicKey("0x7aafFCCF53f113016d6B5aaF89C7c0C8aFd6c22A");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
 		}
 		return walletInfo;
 	}
