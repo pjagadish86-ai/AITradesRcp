@@ -304,15 +304,15 @@ public class AITrades {
 		exchangeComboitems.pack();
 
 		blockChainComboitems.addSelectionListener(new SelectionAdapter() {
-			   @Override
-			    public void widgetSelected(SelectionEvent event) {
-				   exchangeComboitems.setEnabled(true);
-				   exchangeComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
-				   String blockChain = ((Combo)event.getSource()).getText();
-				   getBlockchainAndExchangeInfo();
-				   Set<String> exchangesItems = blockchainExchanges.stream().filter(be -> be.getBlockchainName().equalsIgnoreCase(blockChain)).map(BlockchainExchange :: getExchangeName).collect(Collectors.toSet());
-				   exchangeComboitems.setItems(exchangesItems.toArray(new String[exchangesItems.size()]));
-			    }
+		   @Override
+		    public void widgetSelected(SelectionEvent event) {
+			   exchangeComboitems.setEnabled(true);
+			   exchangeComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
+			   String blockChain = ((Combo)event.getSource()).getText();
+			   getBlockchainAndExchangeInfo();
+			   Set<String> exchangesItems = blockchainExchanges.stream().filter(be -> be.getBlockchainName().equalsIgnoreCase(blockChain)).map(BlockchainExchange :: getExchangeName).collect(Collectors.toSet());
+			   exchangeComboitems.setItems(exchangesItems.toArray(new String[exchangesItems.size()]));
+		    }
 		});
 		
 		Label inputAmountLabel = new Label(topComposite, SWT.NONE);
@@ -335,7 +335,7 @@ public class AITrades {
 		slipagelabelText = new Text(topComposite, SWT.NONE);
 		slipagelabelText.setLayoutData(new GridData(100, 20));
 		slipagelabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
-		
+		slipagelabelText.setText("5");
 		Label FeeLabel = new Label(topComposite, SWT.NONE);
 		FeeLabel.setText("FEE                     ");
 		FeeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
@@ -380,8 +380,8 @@ public class AITrades {
 		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		gasGweiText.setText("");
-		gasLimitText.setText("");
+		gasGweiText.setText("10");
+		gasLimitText.setText("256256");
 		
 		gasModeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override

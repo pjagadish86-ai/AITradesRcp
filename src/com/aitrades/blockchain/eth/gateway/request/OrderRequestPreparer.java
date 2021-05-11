@@ -3,6 +3,8 @@ package com.aitrades.blockchain.eth.gateway.request;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.swt.widgets.Combo;
 
@@ -30,7 +32,22 @@ public class OrderRequestPreparer {
 	
 	private static final String WBNB_ADDRESS = "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c";
 	private static final String WETH_ADDRESS = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
-
+	private static final String WFTM_ADDRESS ="0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83";
+	private static final String WMATIC_ADDRESS ="0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83";
+	
+	static Map<String, String> wrappedMap = new HashMap<>();
+	
+	static {
+		wrappedMap.put("1", WETH_ADDRESS);
+		wrappedMap.put("2", WETH_ADDRESS);
+		wrappedMap.put("3", WBNB_ADDRESS);
+		wrappedMap.put("4", WFTM_ADDRESS);
+		wrappedMap.put("5", WFTM_ADDRESS);
+		wrappedMap.put("6", WFTM_ADDRESS);
+		wrappedMap.put("7", WFTM_ADDRESS);
+		wrappedMap.put("8", WMATIC_ADDRESS);
+	}
+	
 	public Order createOrder(String contractToInteract, String defaultWalletAddress, String amount, 
 							 String slipage, String gasMode, String gasGwei, String gasLimitGwei,
 							 String side, String orderType, String limitPrice, String stopPrice, 
@@ -39,10 +56,10 @@ public class OrderRequestPreparer {
 		Order order = new Order();
 		
 		if(OrderSide.BUY.name().equalsIgnoreCase(side)) {
-			contractToInteract = PANCAKE.equalsIgnoreCase(route) ? WBNB_ADDRESS : WETH_ADDRESS;
+			contractToInteract = wrappedMap.get(route);
 		}
 		if(OrderSide.SELL.name().equalsIgnoreCase(side)) {
-			defaultWalletAddress = PANCAKE.equalsIgnoreCase(route) ? WBNB_ADDRESS : WETH_ADDRESS;
+			defaultWalletAddress = wrappedMap.get(route);
 		}
 		
 		order.setFrom(createTickerEntity(route, amount, contractToInteract, side));
@@ -58,7 +75,7 @@ public class OrderRequestPreparer {
 			order.setGasPrice(createGas("1"));
 			order.setGasLimit(createGas("1"));
 		}
-		order.setWalletInfo(createWalletInfo(route));
+		order.setWalletInfo(createWalletInfo(blockChainComboitems));
 		order.setRoute(route);
 		order.setFee(isFeeEligibile);
 		return order;
@@ -71,14 +88,18 @@ public class OrderRequestPreparer {
 		return gas;
 	}
 
-	private WalletInfo createWalletInfo(String route) {
+	private WalletInfo createWalletInfo(Combo blockChainComboitems) {
 		WalletInfo walletInfo = new WalletInfo();
-		if("PANCAKE".equalsIgnoreCase(route)) {
-			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
-			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");
-		}else {
+
+		if("ETH".equalsIgnoreCase(blockChainComboitems.getText())){
 			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
 			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
+		}else if("BSC".equalsIgnoreCase(blockChainComboitems.getText())){
+			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
+			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
+		}else if("FTM".equalsIgnoreCase(blockChainComboitems.getText())){
+			walletInfo.setPrivateKey("179d5ad28dc5c446d4bf7d8ea9f3f0ebcbe31d00941ebdd8440662e6a0061b94");
+			walletInfo.setPublicKey("0x7aafFCCF53f113016d6B5aaF89C7c0C8aFd6c22A");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
 		}
 		return walletInfo;
 	}
