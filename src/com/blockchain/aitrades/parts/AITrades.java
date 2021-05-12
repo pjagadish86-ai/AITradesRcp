@@ -381,9 +381,8 @@ public class AITrades {
 		gasGweiText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		gasLimitText.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-		gasGweiText.setText("10");
-		gasLimitText.setText("256256");
-		
+		gasGweiText.setText("120");
+		gasLimitText.setText("356256");
 		gasModeComboitems.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -593,7 +592,7 @@ public class AITrades {
 		expectedTokensText.setLayoutData(new GridData(100, 20));
 		expectedTokensText.setEnabled(false);
 		expectedTokensText.setEditable(false);
-		
+		expectedTokensText.setText("1");
 		Composite sideButtonComposite = new Composite(topComposite, SWT.NONE);
 		GridLayout sidetopCompositeLayout = new GridLayout(1, false);
 		sideButtonComposite.setLayout(sidetopCompositeLayout);
@@ -998,10 +997,14 @@ public class AITrades {
             public String getText(Object element) {
             	OrderHistory p = (OrderHistory) element;
             	if(p.getTradetype().equalsIgnoreCase("SNIPE")) {
-            		PriceFeedOracleClient client = new PriceFeedOracleClient();
-            		p.getToTickerAddress();
-            		BigDecimal price  = client.priceOracle(p.getRoute(), p.getToTickerAddress());
-            		return price.toString();
+            		try {
+						PriceFeedOracleClient client = new PriceFeedOracleClient();
+						p.getToTickerAddress();
+						BigDecimal price  = client.priceOracle(p.getRoute(), p.getToTickerAddress());
+						return price.toString();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
             	}
             	return "NA";
             }
@@ -1172,6 +1175,10 @@ public class AITrades {
 		slipagelabelText.setText("");
 		expectedTokensText.setText("");
 		blockchainExchanges = null;
+		
+		gasGweiText.setText("120");
+		gasLimitText.setText("356256");
+		expectedTokensText.setText("1");
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
