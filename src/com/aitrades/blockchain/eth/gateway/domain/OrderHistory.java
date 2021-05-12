@@ -21,7 +21,7 @@ public class OrderHistory {
 	private String swappedhashStatus;
 	private String orderside;
 	private String errormessage;
-	
+	private String toTickerAddress;
 	private String slipage;
 	private String gasPrice;
 	private String gasLimit;
@@ -150,5 +150,14 @@ public class OrderHistory {
 	public void setGasLimit(String gasLimit) {
 		this.gasLimit = gasLimit;
 	}
+
+	public String getToTickerAddress() {
+		return toTickerAddress;
+	}
+
+	public void setToTickerAddress(String toTickerAddress) {
+		this.toTickerAddress = toTickerAddress;
+	}
+	
 	
 }

@@ -55,6 +55,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.aitrades.blockchain.eth.gateway.clients.BlockchainExchangesClient;
 import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
+import com.aitrades.blockchain.eth.gateway.clients.PriceFeedOracleClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
 import com.aitrades.blockchain.eth.gateway.domain.BlockchainExchange;
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
@@ -988,6 +989,21 @@ public class AITrades {
             @Override
             public String getText(Object element) {
                 return LocalDateTime.now().toString();
+            }
+        });
+        
+        col =createTableViewerColumn("Current Price", 100, 17);
+        col.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+            	OrderHistory p = (OrderHistory) element;
+            	if(p.getTradetype().equalsIgnoreCase("SNIPE")) {
+            		PriceFeedOracleClient client = new PriceFeedOracleClient();
+            		p.getToTickerAddress();
+            		BigDecimal price  = client.priceOracle(p.getRoute(), p.getToTickerAddress());
+            		return price.toString();
+            	}
+            	return "NA";
             }
         });
         

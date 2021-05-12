@@ -32,4 +32,6 @@ Bundle-Classpath: .,
  lib/spring-expression-5.3.3.jar,
  lib/spring-web-5.3.3.jar,
  lib/commons-logging-1.2.jar,
- lib/commons-lang3-3.3.2.jar
+ lib/commons-lang3-3.3.2.jar,
+ lib/spring-websocket-5.0.5.RELEASE.jar,
+ lib/spring-messaging-4.0.0.RELEASE.jar
