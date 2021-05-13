@@ -77,7 +77,7 @@ public class SnipeTransactionRequest {
 	
 	private String doSell;
 	private String doSellPercentage;
-	
+	private boolean liquidityCheck;
 	private String errorMessage;
 	
 	public boolean isExeTimeCheck() {
@@ -389,4 +389,11 @@ public class SnipeTransactionRequest {
 		this.liquidityQuantity = liquidityQuantity;
 	}
 
+	public boolean isLiquidityCheck() {
+		return liquidityCheck;
+	}
+
+	public void setLiquidityCheck(boolean liquidityCheck) {
+		this.liquidityCheck = liquidityCheck;
+	}
 }

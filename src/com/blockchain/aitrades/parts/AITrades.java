@@ -97,7 +97,7 @@ public class AITrades {
 	Combo orderTypeLabelComboitems = null;
 	List<BlockchainExchange> blockchainExchanges = null;
 	boolean isFeeEligibile = false;
-	
+	boolean isLiquidityCheck = false;
 	boolean isExecition = false;
 	DateTime executionDateTime = null;
 	String executionTime = "";
@@ -328,6 +328,19 @@ public class AITrades {
 		contractInteraction = new Text(topComposite, SWT.NONE);
 		contractInteraction.setLayoutData(new GridData(300, 20));
 		
+		Label liquidityCheck = new Label(topComposite, SWT.NONE);
+		liquidityCheck.setText("Liquidity Check");
+		liquidityCheck.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		
+		Button hasliquidityCheck = new Button(topComposite, SWT.CHECK);
+		hasliquidityCheck.setText("Liquidity Check");
+		hasliquidityCheck.addSelectionListener(new SelectionAdapter() {
+		    @Override
+		    public void widgetSelected(SelectionEvent event) {
+		    	Button btn = (Button) event.getSource();
+		    	isLiquidityCheck = btn.getSelection();
+		    }
+		});
 
 		
 		//Slippage combo
@@ -543,7 +556,7 @@ public class AITrades {
 		timeLabel.setText("Time   ");
 		timeLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		
-        executionDateTime = new DateTime(topComposite, SWT.TIME);;
+        executionDateTime = new DateTime(topComposite, SWT.TIME);
         executionDateTime.setEnabled(false);
 		//executionDateTime.setRegion(region);
 		isExecutionOrderCheckBox.addSelectionListener(new SelectionAdapter() {
@@ -553,7 +566,7 @@ public class AITrades {
 		    	isExecition = btn.getSelection();
 		    	if(isExecition) {
 		    		executionDateTime.setEnabled(true);
-		    		executionDateTime = new DateTime(topComposite, SWT.TIME);;
+		    		executionDateTime = new DateTime(topComposite, SWT.TIME);
 		    	}else {
 		    		executionDateTime.setEnabled(false);
 		    	}
@@ -1101,6 +1114,8 @@ public class AITrades {
 			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
 				snipeTransactionRequest.setExpectedOutPutToken(new BigInteger(expectedTokensText.getText()));
 			}
+			snipeTransactionRequest.setLiquidityCheck(isLiquidityCheck);
+			
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
 			restTemplate = new RestTemplate();
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
@@ -1169,7 +1184,7 @@ public class AITrades {
 		minLiquidityText.setText("");
 		expectedTokensText.setText("");
 		takeProfitOrderLimit.setText("");
-		isExecutionOrderCheckBox.setSelection(false);
+	
 		gasGweiText.setText("");
 		gasLimitText.setText("");
 		slipagelabelText.setText("");
@@ -1179,6 +1194,10 @@ public class AITrades {
 		gasGweiText.setText("120");
 		gasLimitText.setText("356256");
 		expectedTokensText.setText("1");
+		isLiquidityCheck = false;
+		isExecutionOrderCheckBox = null;
+		isExecition = false;
+		localDateTime = null;
 	}
 
 	private BigDecimal buildExpectedOutPutAmount(Text preListingSalePricetxt, Text expectedToleranceTimestxt, String inputAmount) {
