@@ -36,7 +36,7 @@ public class SnipeTransactionRequest {
 	
 	private BigInteger gasPrice;
 	private BigInteger gasLimit;
-	
+	private String gasPriceStr;
 	private List<String> memoryPath;
 	
 	private boolean hasFee;
@@ -396,4 +396,13 @@ public class SnipeTransactionRequest {
 	public void setLiquidityCheck(boolean liquidityCheck) {
 		this.liquidityCheck = liquidityCheck;
 	}
+
+	public String getGasPriceStr() {
+		return gasPriceStr;
+	}
+
+	public void setGasPriceStr(String gasPriceStr) {
+		this.gasPriceStr = gasPriceStr;
+	}
+	
 }

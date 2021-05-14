@@ -102,11 +102,8 @@ public class AITrades {
 	DateTime executionDateTime = null;
 	String executionTime = "";
 	Button isExecutionOrderCheckBox = null;
-	
-	
 	Text minLiquidityText = null;
 	Text expectedTokensText = null;
-	
 	
 	Device device = Display.getCurrent();
 	RGB rgbRed = new RGB(255, 0, 0);
@@ -1098,7 +1095,7 @@ public class AITrades {
 	}
 	
 	private void callSnipeOrderService(String fromAddress, String toAddress, String amount, String slipage,
-									   String gasMode, String gasGwei, String gasLimitGwei, String orderType,  
+									   String gasMode, String gasPriceWei, String gasLimitGwei, String orderType,  
 									   String side, String limitPrice, String stopPrice, 
 									   String percentage, String route, boolean isFeeEligibile, String localDateTime, Combo blockChainComboitems) {
 		RestTemplate restTemplate = null;
@@ -1106,7 +1103,7 @@ public class AITrades {
 		try {
 			SnipeRequestPreparer  snipeRequestPreparer = new SnipeRequestPreparer();
 			SnipeTransactionRequest snipeTransactionRequest = snipeRequestPreparer.createSnipeTransactionRequest(fromAddress, toAddress, amount, slipage, 
-					gasMode, gasGwei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime, blockChainComboitems);
+					gasMode, gasPriceWei, gasLimitGwei, orderType, side, limitPrice, stopPrice, percentage, route, isFeeEligibile, localDateTime, blockChainComboitems);
 			snipeTransactionRequest.setExeTimeCheck(isExecition);
 			if(minLiquidityText != null && minLiquidityText.getText() != null && !minLiquidityText.getText().isEmpty()) {
 				snipeTransactionRequest.setLiquidityQuantity(Convert.toWei(minLiquidityText.getText(), Convert.Unit.GWEI).toBigInteger());
@@ -1114,6 +1111,7 @@ public class AITrades {
 			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
 				snipeTransactionRequest.setExpectedOutPutToken(new BigInteger(expectedTokensText.getText()));
 			}
+			snipeTransactionRequest.setGasPriceStr(gasPriceWei);
 			snipeTransactionRequest.setLiquidityCheck(isLiquidityCheck);
 			
 			HttpEntity<SnipeTransactionRequest> httpEntity = new HttpEntity<SnipeTransactionRequest>(snipeTransactionRequest,createSecurityHeaders());
@@ -1121,16 +1119,16 @@ public class AITrades {
 			ResponseEntity<String> responseEntity =  restTemplate.exchange(SNIPE_ORDER, HttpMethod.POST, httpEntity, String.class);
 			Object respose =  responseEntity.getBody();
 			if(respose != null) {
+				OrderHistroyRetrieverClient historyRetriever = new OrderHistroyRetrieverClient();
+				List<OrderHistory> retrieveOrderHistroy = historyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
+				histroyTableViewer.setInput(retrieveOrderHistroy);
+				histroyTableViewer.refresh();
 				openSucessDialog("Snipe Order", "Snipe Order sucessfully created order id: "+ (String)respose);
-//				OrderHistroyRetrieverClient  histroyRetriever = new OrderHistroyRetrieverClient();
-//				List<OrderHistory> retrieveOrderHistroy = histroyRetriever.retrieveOrderHistroy(ethWalletPublicKey, bscWalletPublicKey);
-//				histroyTableViewer.setInput(retrieveOrderHistroy);
-//				histroyTableViewer.refresh();
 			}
 			if(takeProfitOrderLimit.getText() != null && !takeProfitOrderLimit.getText().isEmpty()) {
 				String snipeOrderId = (String)respose;
 				
-				Order order = prepareOrder(snipeTransactionRequest.getToAddress(), toAddress, amount, "5", gasMode, gasGwei, gasLimitGwei, "SELL", "MARKET",
+				Order order = prepareOrder(snipeTransactionRequest.getToAddress(), toAddress, amount, "5", gasMode, gasPriceWei, gasLimitGwei, "SELL", "MARKET",
 						   				   limitPrice, stopPrice, percentage, route, isFeeEligibile, new OrderRequestPreparer(), blockChainComboitems);
 				order.setParentSnipeId(snipeOrderId);
 				order.setAutoSnipeLimitSellTrailPercent(takeProfitOrderLimit.getText());
