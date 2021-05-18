@@ -1297,7 +1297,9 @@ public class AITrades {
 					
 					sellButton.setBackground(black);
 					buyButton.setBackground(black);
-					isExecutionOrderCheckBox.setEnabled(true);
+					if(isExecutionOrderCheckBox != null) {
+						isExecutionOrderCheckBox.setEnabled(true);
+					}
 					takeProfitOrderLimit.setEnabled(true);
 					takeProfitOrderLimit.setEditable(true);
 					gasGweiText.setEnabled(true);
