@@ -90,20 +90,18 @@ public class OrderRequestPreparer {
 
 	private WalletInfo createWalletInfo(Combo blockChainComboitems) {
 		WalletInfo walletInfo = new WalletInfo();
-
-		if("ETH".equalsIgnoreCase(blockChainComboitems.getText())){
+		if("ETH".equalsIgnoreCase(blockChainComboitems.getText()) || "MATIC".equalsIgnoreCase(blockChainComboitems.getText())){
 			walletInfo.setPrivateKey("d8b1d7f8a42e063489759dcfabd64e6a7d6f6b7ca72ccec3b5b344f5f916976d");
 			walletInfo.setPublicKey("0x7B74B57c89A73145Fe1915f45d8c23682fF78341");
-		}else if("BSC".equalsIgnoreCase(blockChainComboitems.getText())){
-			walletInfo.setPrivateKey("1e8f380ef0c2e2d950c2c256329b3a505fa9d46a74a5dc140607c24474486f04");
-			walletInfo.setPublicKey("0xF007afdB97c3744762F953C07CD45Dd237663C3F");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
+		}else if("BSC".equalsIgnoreCase(blockChainComboitems.getText()) || "KCC".equalsIgnoreCase(blockChainComboitems.getText())){
+			walletInfo.setPrivateKey("dd2cfc81dbc137c231b92454f899cf0d44d17e30be5c8ee41ab8cd3d3f99cb05");
+			walletInfo.setPublicKey("0xfBd948E4ca80224172c98dBfc844aE9d700CDdeA");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
 		}else if("FTM".equalsIgnoreCase(blockChainComboitems.getText())){
 			walletInfo.setPrivateKey("179d5ad28dc5c446d4bf7d8ea9f3f0ebcbe31d00941ebdd8440662e6a0061b94");
 			walletInfo.setPublicKey("0x7aafFCCF53f113016d6B5aaF89C7c0C8aFd6c22A");//  this is should be defaulted to BSC, FTM, PLOYGON and SHOULD be included to have ETH 
 		}
 		return walletInfo;
 	}
-
 	private Gas createGas(String gasGwei) {
 		Gas gas = new Gas();
 		gas.setValue(gasGwei);

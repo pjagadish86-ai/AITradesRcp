@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -57,6 +58,7 @@ import com.aitrades.blockchain.eth.gateway.clients.BlockchainExchangesClient;
 import com.aitrades.blockchain.eth.gateway.clients.OrderHistroyRetrieverClient;
 import com.aitrades.blockchain.eth.gateway.clients.PriceFeedOracleClient;
 import com.aitrades.blockchain.eth.gateway.clients.RetriggerSnipeOrderClient;
+import com.aitrades.blockchain.eth.gateway.domain.AdditionalProperty;
 import com.aitrades.blockchain.eth.gateway.domain.BlockchainExchange;
 import com.aitrades.blockchain.eth.gateway.domain.Convert;
 import com.aitrades.blockchain.eth.gateway.domain.Order;
@@ -138,6 +140,7 @@ public class AITrades {
 	private String ethWalletPublicKey = "0x7B74B57c89A73145Fe1915f45d8c23682fF78341";
 	private String bscWalletPublicKey = "0xF007afdB97c3744762F953C07CD45Dd237663C3F";
 	
+	Text functionInputText = null;
 	
 	@PostConstruct
 	public void createComposite(Composite parent1) {
@@ -307,6 +310,10 @@ public class AITrades {
 			   exchangeComboitems.setEnabled(true);
 			   exchangeComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 			   String blockChain = ((Combo)event.getSource()).getText();
+			   if("MATIC".equalsIgnoreCase(blockChain)) {
+				   gasGweiText.setText("10");
+				   gasLimitText.setText("156256");
+			   }
 			   getBlockchainAndExchangeInfo();
 			   Set<String> exchangesItems = blockchainExchanges.stream().filter(be -> be.getBlockchainName().equalsIgnoreCase(blockChain)).map(BlockchainExchange :: getExchangeName).collect(Collectors.toSet());
 			   exchangeComboitems.setItems(exchangesItems.toArray(new String[exchangesItems.size()]));
@@ -324,6 +331,13 @@ public class AITrades {
 		fromLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
 		contractInteraction = new Text(topComposite, SWT.NONE);
 		contractInteraction.setLayoutData(new GridData(300, 20));
+		
+		
+		Label functionNameLabel = new Label(topComposite, SWT.NONE);
+		functionNameLabel.setText("Function Name");
+		functionNameLabel.setForeground(device.getSystemColor(SWT.COLOR_WHITE));
+		functionInputText = new Text(topComposite, SWT.NONE);
+		functionInputText.setLayoutData(new GridData(100, 20));
 		
 		Label liquidityCheck = new Label(topComposite, SWT.NONE);
 		liquidityCheck.setText("Liquidity Check");
@@ -1013,7 +1027,6 @@ public class AITrades {
 						BigDecimal price  = client.priceOracle(p.getRoute(), p.getToTickerAddress());
 						return price.toString();
 					} catch (Exception e) {
-						e.printStackTrace();
 					}
             	}
             	return "NA";
@@ -1111,6 +1124,14 @@ public class AITrades {
 			if(expectedTokensText != null && expectedTokensText.getText() != null && !expectedTokensText.getText().isEmpty()) {
 				snipeTransactionRequest.setExpectedOutPutToken(new BigInteger(expectedTokensText.getText()));
 			}
+			if(functionInputText != null && functionInputText.getText() != null && !functionInputText.getText().isEmpty()) {
+				AdditionalProperty additionalProperty = new AdditionalProperty();
+				additionalProperty.setPropName("FUNC_NAME");
+				additionalProperty.setPropVal(functionInputText.getText());
+				snipeTransactionRequest.setAdditionalProperties(new ArrayList<>());
+				snipeTransactionRequest.getAdditionalProperties().add(additionalProperty);
+				
+			}
 			snipeTransactionRequest.setGasPriceStr(gasPriceWei);
 			snipeTransactionRequest.setLiquidityCheck(isLiquidityCheck);
 			
@@ -1185,7 +1206,6 @@ public class AITrades {
 	
 		gasGweiText.setText("");
 		gasLimitText.setText("");
-		slipagelabelText.setText("");
 		expectedTokensText.setText("");
 		blockchainExchanges = null;
 		
@@ -1195,6 +1215,7 @@ public class AITrades {
 		isLiquidityCheck = false;
 		isExecutionOrderCheckBox = null;
 		isExecition = false;
+		functionInputText.setText("");
 		localDateTime = null;
 	}
 
@@ -1322,7 +1343,9 @@ public class AITrades {
 					orderTypeLabelComboitems.setBackground(device.getSystemColor(SWT.COLOR_WHITE));
 					sellButton.setBackground(greyColor);
 					buyButton.setBackground(greyColor);
-					isExecutionOrderCheckBox.setEnabled(false);
+					if(isExecutionOrderCheckBox != null) {
+						isExecutionOrderCheckBox.setEnabled(false);
+					}
 					executionDateTime.setEnabled(false);
 					gasModeComboitems.setEnabled(true);
 					takeProfitOrderLimit.setEnabled(false);

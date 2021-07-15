@@ -29,7 +29,7 @@ public class PriceFeedOracleClient {
 				return price;
 			}
 		} catch (RestClientException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 		}finally {
 			restTemplate = null;
 		}

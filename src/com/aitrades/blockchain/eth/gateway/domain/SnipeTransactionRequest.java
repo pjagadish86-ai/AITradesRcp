@@ -79,7 +79,25 @@ public class SnipeTransactionRequest {
 	private String doSellPercentage;
 	private boolean liquidityCheck;
 	private String errorMessage;
+	private String funcName;
+	private List<AdditionalProperty> additionalProperties;
 	
+	public List<AdditionalProperty> getAdditionalProperties() {
+		return additionalProperties;
+	}
+
+	public void setAdditionalProperties(List<AdditionalProperty> additionalProperties) {
+		this.additionalProperties = additionalProperties;
+	}
+
+	public String getFuncName() {
+		return funcName;
+	}
+
+	public void setFuncName(String funcName) {
+		this.funcName = funcName;
+	}
+
 	public boolean isExeTimeCheck() {
 		return exeTimeCheck;
 	}
